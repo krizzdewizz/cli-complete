@@ -1,10 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'variables';
-@import '../../../node_modules/font-awesome/scss/font-awesome';
+@import 'colors';
 
 @import '../../../node_modules/golden-layout/src/css/goldenlayout-base.css';
 @import '../../../node_modules/golden-layout/src/css/goldenlayout-dark-theme.css';
+
+@import '../../../node_modules/xterm/dist/xterm.css';
 
 body {
     font-family: Consolas, "Courier New", monospace;
@@ -22,6 +24,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    background: $color-bg-dark;
 }
 
 .__hidden {
@@ -34,5 +37,9 @@ body {
 }
 
 ngx-monaco-editor {
-    height: 100% !important;
+    height: 120px !important;
+}
+
+clic-terminal .terminal {
+    flex: 1;
 }

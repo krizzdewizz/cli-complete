@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "project": {
-    "name": "angular-cli-electron"
+    "name": "clic-complete"
   },
   "apps": [
     {
@@ -30,12 +30,19 @@
       ],
       "scripts": [
         "../node_modules/jquery/dist/jquery.js",
-        "../node_modules/golden-layout/dist/goldenlayout.js"
+        "../node_modules/golden-layout/dist/goldenlayout.js",
+        "assets/fontawesome-all.js",
+        "../node_modules/xterm/dist/xterm.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",
         "prod": "environments/environment.prod.ts"
+      },
+      "stylePreprocessorOptions": {
+        "includePaths": [
+          "assets/scss"
+        ]
       }
     }
   ],

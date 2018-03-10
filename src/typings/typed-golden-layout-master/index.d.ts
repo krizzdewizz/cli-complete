@@ -364,6 +364,9 @@ declare module GoldenLayout {
     }
 
     export interface ContentItem {
+
+        addChild(item: ItemConfigType);
+
         /**
          * This items configuration in its current state
          */

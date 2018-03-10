@@ -1,22 +1,28 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { SessionService } from '@services/session.service';
 
 @Component({
   selector: 'clic-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements OnInit {
+export class EditorComponent implements OnInit, OnDestroy {
+
   editorOptions: monaco.editor.IEditorConstructionOptions = {
     theme: 'vs-dark',
-    language: 'javascript',
+    // language: 'javascript',
     automaticLayout: true
   };
-  code = 'function x() {\nconsole.log("Hello world!");\n}';
+  // code = '';
+  code = String(new Date(Date.now()) + '\n\n');
 
-  constructor() { }
+  constructor(private sessionService: SessionService) {
+  }
 
   ngOnInit() {
   }
 
+  ngOnDestroy(): void {
+
+  }
 }
