@@ -28,7 +28,10 @@
       "styles": [
         "assets/scss/index.scss"
       ],
-      "scripts": [],
+      "scripts": [
+        "../node_modules/jquery/dist/jquery.js",
+        "../node_modules/golden-layout/dist/goldenlayout.js"
+      ],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",

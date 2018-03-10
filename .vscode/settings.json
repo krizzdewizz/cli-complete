@@ -1,2 +1,24 @@
+// Place your settings in this file to overwrite default and user settings.
 {
+    "files.trimTrailingWhitespace": true,
+    "files.exclude": {
+        "**/tmp": true,
+        "**/dist": true,
+        "**/*.map": true,
+        "**/*.js": {
+            "when": "$(basename).ts"
+        },
+        ".chrome-user-data-dir": true,
+        "node_modules": false,
+        "e2e": true
+    },
+    "typescript.tsdk": "./node_modules/typescript/lib",
+    "typescript.extension.sortImports.sortMethod": "path",
+    "typescript.extension.sortImports.maxNamedImportsInSingleLine": 10,
+    "typescript.extension.sortImports.pathSortOrder": [
+        "package",
+        "relativeUpLevel",
+        "relativeDownLevel"
+    ],
+    "tslint.alwaysShowRuleFailuresAsWarnings": true
 }

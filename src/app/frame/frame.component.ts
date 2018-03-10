@@ -1,17 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-
-import {
-  CommandRegistry
-} from '@phosphor/commands';
-
-import {
-  Message
-} from '@phosphor/messaging';
-
-import {
-  BoxPanel, CommandPalette, ContextMenu, DockPanel, Menu, MenuBar, Widget
-} from '@phosphor/widgets';
-import { ContentWidget } from './content-widget';
+import { Component, OnInit, ElementRef, ViewChild, ViewChildren, QueryList, ViewContainerRef, ComponentFactoryResolver, OnDestroy } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 
 @Component({
@@ -19,33 +6,58 @@ import { EditorComponent } from '../editor/editor.component';
   templateUrl: './frame.component.html',
   styleUrls: ['./frame.component.scss']
 })
-export class FrameComponent implements OnInit {
+export class FrameComponent implements OnInit, OnDestroy {
+  private config: GoldenLayout.Config;
+  private layout: any;
 
-  @ViewChild(EditorComponent, { read: ElementRef }) editorElement: ElementRef;
+  @ViewChild('layoutContainer') layoutContainer: ElementRef;
 
-  constructor(private elRef: ElementRef) {
+  constructor(
+    private el: ElementRef,
+    private viewContainer: ViewContainerRef,
+    private componentFactoryResolver: ComponentFactoryResolver
+  ) {
+    this.config = {
+      content: [{
+        type: 'stack',
+        content: [
+          {
+            type: 'component',
+            componentName: 'test1',
+            componentState: {
+              message: 'Top Left'
+            }
+          },
+          {
+            type: 'component',
+            componentName: 'test1',
+            componentState: {
+              message: 'Top Left'
+            }
+          }
+        ]
+      }]
+    };
   }
 
   ngOnInit() {
-    this.createUi();
+    this.layout = new GoldenLayout(this.config, this.layoutContainer.nativeElement);
+
+    this.layout.registerComponent('test1', (container, componentState) => {
+      const factory = this.componentFactoryResolver.resolveComponentFactory(EditorComponent);
+
+      const compRef = this.viewContainer.createComponent(factory);
+      container.getElement().append($(compRef.location.nativeElement));
+      compRef.changeDetectorRef.detectChanges();
+    });
+
+    this.layout.init();
+    window.addEventListener('resize', () => {
+      this.layout.updateSize();
+    });
+
   }
-
-  private createUi() {
-    const r1 = new ContentWidget('Red', this.editorElement.nativeElement);
-
-    const dock = new DockPanel();
-    dock.addWidget(r1);
-    dock.id = 'dock';
-
-    BoxPanel.setStretch(dock, 1);
-
-    const main = new BoxPanel({ direction: 'left-to-right', spacing: 0 });
-    main.id = 'main';
-    main.addWidget(dock);
-
-    window.onresize = () => { main.update(); };
-
-    Widget.attach(main, this.elRef.nativeElement);
+  ngOnDestroy() {
   }
 
 }

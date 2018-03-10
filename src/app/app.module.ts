@@ -19,6 +19,7 @@ import { FrameComponent } from './frame/frame.component';
     MonacoEditorModule.forRoot()
   ],
   providers: [],
+  entryComponents: [EditorComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

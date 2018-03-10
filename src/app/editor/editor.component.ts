@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MonacoEditorModule } from 'ngx-monaco-editor';
 
 @Component({
   selector: 'clic-editor',
@@ -6,7 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./editor.component.scss']
 })
 export class EditorComponent implements OnInit {
-  editorOptions = { theme: 'vs-dark', language: 'javascript' };
+  editorOptions: monaco.editor.IEditorConstructionOptions = {
+    theme: 'vs-dark',
+    language: 'javascript',
+    automaticLayout: true
+  };
   code = 'function x() {\nconsole.log("Hello world!");\n}';
 
   constructor() { }
