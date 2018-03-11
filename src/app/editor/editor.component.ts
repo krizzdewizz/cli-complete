@@ -48,7 +48,7 @@ export class EditorComponent implements OnInit, OnDestroy {
       ];
     };
 
-    setTimeout(initEditor, 1000);
+    // setTimeout(initEditor, 1000);
   }
 
   ngOnDestroy(): void {

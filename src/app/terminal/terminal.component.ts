@@ -1,6 +1,8 @@
-import { Component, OnInit, ElementRef } from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
+import { XtermService, TerminalService } from '@services/xterm.service';
+import { ISubscription } from 'rxjs/Subscription';
 
 Terminal.applyAddon(fit);  // Apply the `fit` addon
 
@@ -9,14 +11,21 @@ Terminal.applyAddon(fit);  // Apply the `fit` addon
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.scss']
 })
-export class TerminalComponent implements OnInit {
+export class TerminalComponent implements OnInit, OnDestroy {
 
   private term: Terminal;
+  private subscriptions: ISubscription[];
 
-  constructor(private elRef: ElementRef) {
+  constructor(private elRef: ElementRef, private termService: TerminalService) {
   }
 
   ngOnInit() {
+
+    this.subscriptions = [
+      this.termService.onData.subscribe(data => {
+        this.term.write(data);
+      })
+    ];
 
     const term = this.term = new Terminal({
       fontFamily: 'Consolas',
@@ -43,7 +52,11 @@ export class TerminalComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.subscriptions.forEach(it => it.unsubscribe());
+  }
+
   send(data: string) {
-    this.term.writeln(data);
+    this.termService.send(data);
   }
 }
