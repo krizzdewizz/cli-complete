@@ -21,8 +21,8 @@ export class EditorComponent implements OnInit, OnDestroy {
     // language: 'javascript',
     // automaticLayout: true
   };
-  code = '';
-  // code = String(new Date(Date.now()) + '\n\n');
+  // code = '';
+  code = String(new Date(Date.now()) + '\n\n');
 
   constructor(private sessionService: SessionService) {
   }
@@ -32,9 +32,13 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    this.editorCmp.initMonaco(this.editorCmp.options);
+
     const initEditor = () => {
 
       this.editor.focus();
+      this.editor.layout();
 
       this.toDispose = [
         this.editor.addAction({
@@ -48,7 +52,7 @@ export class EditorComponent implements OnInit, OnDestroy {
       ];
     };
 
-    // setTimeout(initEditor, 1000);
+    setTimeout(initEditor, 800);
   }
 
   ngOnDestroy(): void {
