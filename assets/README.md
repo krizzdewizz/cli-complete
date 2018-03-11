@@ -1,0 +1,1 @@
+copy from node_modules/ngx-monaco-editor/assets

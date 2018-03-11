@@ -14,10 +14,7 @@ const createWindow = () => {
     win = new BrowserWindow({
       width: 800,
       height: 600,
-      icon: './src/favicon.ico',
-      // webPreferences: {
-      //   nodeIntegration: false // turn it on to use node features
-      // }
+      icon: './src/favicon.ico'
     });
 
     // and load the app.

@@ -10,7 +10,8 @@
         },
         ".chrome-user-data-dir": true,
         "node_modules": false,
-        "e2e": true
+        "e2e": true,
+        "yarn-error.log": true
     },
     "typescript.tsdk": "./node_modules/typescript/lib",
     "typescript.extension.sortImports.sortMethod": "path",
