@@ -28,6 +28,18 @@ export class TerminalComponent implements OnInit, OnDestroy {
     this.subscriptions = [
       this.termService.onData.subscribe(data => {
         this.term.write(data);
+
+        const s = String(data);
+        const msg = 'Terminate batch job (Y/N)?';
+
+        const pos = s.lastIndexOf('\n');
+        const lastLine = pos >= 0 ? s.substring(pos).trim() : s;
+
+        if (lastLine.includes(msg)) {
+          this.send('y\r');
+        }
+
+        this.term.scrollToBottom();
       })
     ];
 
