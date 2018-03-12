@@ -34,6 +34,12 @@ export class TermSession {
         });
     }
 
+    resize(cols: number, rows: number) {
+        if (this.process) {
+            this.process.resize(cols, rows);
+        }
+    }
+
     stop() {
         if (this.process) {
             this.process.kill();

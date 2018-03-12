@@ -67,7 +67,7 @@ forever`;
       ];
     };
 
-    setTimeout(initEditor, 800);
+    setTimeout(initEditor, 1000);
   }
 
   private break() {

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { TermSession } from '@server/term-server';
 import { Observable } from 'rxjs/Observable';
-// import { TermSession } from '@server/term-server';
 
 const { remote } = window.require('electron');
 
@@ -10,6 +9,8 @@ export abstract class TerminalService {
   onData: Observable<string>;
   abstract send(data: string);
   abstract start();
+  resize(cols: number, rows: number) {
+  }
 }
 
 const { TermSession: _TermSession } = remote.require('./server/term-server');
@@ -30,6 +31,10 @@ export class RemoteService extends TerminalService {
 
   send(data: string) {
     this.termSession.send(data);
+  }
+
+  resize(cols: number, rows: number) {
+    this.termSession.resize(cols, rows);
   }
 
   start() {
