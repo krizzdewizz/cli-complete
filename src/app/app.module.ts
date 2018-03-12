@@ -9,7 +9,7 @@ import { FrameComponent } from './frame/frame.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { SessionService } from './services/session.service';
 import { TerminalComponent } from './terminal/terminal.component';
-import { XtermService, TerminalService } from '@services/xterm.service';
+import { XtermService, TerminalService, RemoteService } from '@services/xterm.service';
 
 @NgModule({
   declarations: [
@@ -25,7 +25,7 @@ import { XtermService, TerminalService } from '@services/xterm.service';
     MonacoEditorModule.forRoot()
   ],
   providers: [
-    { provide: TerminalService, useClass: XtermService },
+    { provide: TerminalService, useClass: RemoteService },
     SessionService,
   ],
   entryComponents: [EditorComponent],

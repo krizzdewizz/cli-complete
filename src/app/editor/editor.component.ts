@@ -22,7 +22,11 @@ export class EditorComponent implements OnInit, OnDestroy {
     // automaticLayout: true
   };
   // code = '';
-  code = String(new Date(Date.now()) + '\n\n');
+  // code = String(new Date(Date.now()) + '\n\n');
+  code = `prompt !!READY!!
+dir
+cls
+forever`;
 
   constructor(private sessionService: SessionService) {
   }
@@ -37,22 +41,74 @@ export class EditorComponent implements OnInit, OnDestroy {
 
     const initEditor = () => {
 
-      this.editor.focus();
-      this.editor.layout();
+      const ed = this.editor;
+      const line = ed.getSelection().startLineNumber;
+      const maxCol = ed.getModel().getLineMaxColumn(line);
+      ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
+
+      ed.layout();
+      ed.focus();
 
       this.toDispose = [
-        this.editor.addAction({
+        ed.addAction({
           id: 'send',
           label: 'send',
           keybindings: [monaco.KeyCode.Enter],
-          run: editor => {
-            this.terminalCmp.send(this.code);
-          }
+          run: () => this.send()
+        }),
+
+        ed.addAction({
+          id: 'break',
+          label: 'break',
+          // tslint:disable-next-line:no-bitwise
+          keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],
+          run: () => this.break()
         })
       ];
     };
 
     setTimeout(initEditor, 800);
+  }
+
+  private break() {
+    // console.log('breakkkkkkkkkkk');
+    const ed = this.editor;
+    if (ed.getSelection().isEmpty()) {
+      this.terminalCmp.send(String.fromCharCode(3));
+    } else {
+      ed.getAction('editor.action.clipboardCopyAction').run();
+    }
+  }
+
+  private send() {
+    const ed = this.editor;
+    const model = ed.getModel();
+    const sel = ed.getSelection();
+    const line = sel.startLineNumber;
+    const maxCol = model.getLineMaxColumn(line);
+    let text: string;
+    const selEmpty = sel.isEmpty();
+    if (selEmpty) {
+      text = model.getLineContent(line);
+    } else {
+      text = model.getValueInRange(sel);
+    }
+
+
+    this.terminalCmp.send(`${text}\r`);
+
+    const clearLine = false;
+    if (clearLine) {
+      if (text && selEmpty) {
+        ed.pushUndoStop();
+        ed.executeEdits('', [{
+          identifier: { major: 1, minor: 0 },
+          range: new monaco.Range(line, 1, line, maxCol), text: '', forceMoveMarkers: true
+        }]);
+      }
+    } else {
+      ed.setSelection(new monaco.Range(line, 1, line, maxCol));
+    }
   }
 
   ngOnDestroy(): void {

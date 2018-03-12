@@ -1,10 +1,12 @@
 import { Component, OnInit, ElementRef, OnDestroy } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
+import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
 import { XtermService, TerminalService } from '@services/xterm.service';
 import { ISubscription } from 'rxjs/Subscription';
 
-Terminal.applyAddon(fit);  // Apply the `fit` addon
+Terminal.applyAddon(fit);
+Terminal.applyAddon(winptyCompat);
 
 @Component({
   selector: 'clic-terminal',
@@ -20,6 +22,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    this.termService.start();
 
     this.subscriptions = [
       this.termService.onData.subscribe(data => {
@@ -37,12 +41,17 @@ export class TerminalComponent implements OnInit, OnDestroy {
       }
     });
 
+    (term as any).winptyCompatInit();
+
+    term.on('lineFeed', all => {
+      console.log('data', all);
+
+    });
+
     setTimeout(() => {
       term.open(this.elRef.nativeElement);
-
-      // for (let i = 0; i < 2000; i++) {
-      //   term.write('Hello from $ ' + i + '\n\r');
-      // }
+      // Ensure new processes' output starts at start of new line
+      // this.term.write('\n\x1b[G');
 
       (term as any).fit();
     });
@@ -58,5 +67,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   send(data: string) {
     this.termService.send(data);
+    this.term.clear();
   }
 }

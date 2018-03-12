@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "target": "es5",
+    "baseUrl": "./",
+    "typeRoots": [
+      "../node_modules/@types"
+    ],
+    "paths": {
+      "@model/*": [
+        "app/model/*"
+      ]
+    },
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  },
+  "include": [
+    "server/**/*"
+  ],
+  "types": [
+    "node"
+  ]
+}
