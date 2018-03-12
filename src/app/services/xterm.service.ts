@@ -1,7 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-import { TermSession } from '@server/term-server';
-import { Observable } from 'rxjs/Observable';
 import { SessionConf, TerminalSession } from '@model/model';
 
 const { remote } = window.require('electron');

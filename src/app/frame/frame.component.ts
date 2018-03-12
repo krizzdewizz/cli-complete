@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, ViewChildren, QueryList, ViewContainerRef, ComponentFactoryResolver, OnDestroy } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 import { SessionService } from '@services/session.service';
 

@@ -1,10 +1,7 @@
 import { SessionConf, TerminalSession } from '@model/model';
-import * as child_process from 'child_process';
-import * as stream from 'stream';
 import { Subject } from 'rxjs/Subject';
 import { spawn } from 'node-pty';
 import { ITerminal } from 'node-pty/lib/interfaces';
-import { Observable } from 'rxjs/Observable';
 
 export class TermSession implements TerminalSession {
 

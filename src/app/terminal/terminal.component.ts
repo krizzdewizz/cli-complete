@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, OnDestroy, HostBinding, HostListener, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
@@ -6,7 +6,7 @@ import { TerminalService } from '@services/xterm.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { TerminalSession } from '@model/model';
 
-const { remote, clipboard } = window.require('electron');
+const { clipboard } = window.require('electron');
 
 Terminal.applyAddon(fit);
 Terminal.applyAddon(winptyCompat);

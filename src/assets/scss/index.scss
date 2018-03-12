@@ -44,3 +44,12 @@ ngx-monaco-editor {
 clic-terminal .terminal {
     flex: 1;
 }
+
+.quick-open-widget {
+    position: fixed;
+    height: 300px !important;
+
+    .quick-open-tree {
+        height: 265px !important;
+    }
+}

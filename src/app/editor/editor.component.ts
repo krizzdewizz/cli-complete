@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { SessionService } from '@services/session.service';
 import { TerminalComponent } from '../terminal/terminal.component';
 
