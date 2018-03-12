@@ -125,4 +125,8 @@ forever`;
   focusEditor() {
     this.editor.focus();
   }
+
+  pasteFromClipboard() {
+    this.editor.getAction('editor.action.clipboardPasteAction').run();
+  }
 }

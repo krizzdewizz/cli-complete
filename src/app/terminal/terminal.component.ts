@@ -21,16 +21,20 @@ export class TerminalComponent implements OnInit, OnDestroy {
   private subscriptions: ISubscription[];
 
   @Output() focusNextGroup = new EventEmitter<void>();
+  @Output() pasteFromClipboard = new EventEmitter<void>();
 
   constructor(private elRef: ElementRef, private termService: TerminalService) {
   }
 
-  @HostListener('mouseup')
-  onMouseup() {
+  @HostListener('mouseup', ['$event'])
+  onMouseUp(e: MouseEvent) {
     const term = this.term;
-    if (term.hasSelection()) {
+    if (e.button === 0 && term.hasSelection()) {
       clipboard.writeText(term.getSelection());
       term.clearSelection();
+      return false;
+    } else if (e.button === 2) {
+      this.pasteFromClipboard.next();
       return false;
     }
   }
