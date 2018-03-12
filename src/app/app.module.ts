@@ -9,7 +9,7 @@ import { FrameComponent } from './frame/frame.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { SessionService } from './services/session.service';
 import { TerminalComponent } from './terminal/terminal.component';
-import { XtermService, TerminalService, RemoteService } from '@services/xterm.service';
+import { TerminalService, RemoteService } from '@services/xterm.service';
 
 @NgModule({
   declarations: [

@@ -2,8 +2,9 @@ import { Component, OnInit, ElementRef, OnDestroy, HostBinding, HostListener, Ou
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
-import { XtermService, TerminalService } from '@services/xterm.service';
+import { TerminalService } from '@services/xterm.service';
 import { ISubscription } from 'rxjs/Subscription';
+import { TerminalSession } from '@model/model';
 
 const { remote, clipboard } = window.require('electron');
 
@@ -19,6 +20,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   private term: Terminal;
   private subscriptions: ISubscription[];
+  private session: TerminalSession;
 
   @Output() focusNextGroup = new EventEmitter<void>();
   @Output() pasteFromClipboard = new EventEmitter<void>();
@@ -40,13 +42,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-
-    this.termService.start();
-
-    this.subscriptions = [
-      this.termService.onData.subscribe(data => this.onData(data))
-    ];
-
     const term = this.term = new Terminal({
       fontFamily: 'Consolas',
       fontSize: 14,
@@ -60,7 +55,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
     (term as any).winptyCompatInit();
 
     // 'native' command line
-    term.on('data', data => this.termService.send(data));
+    term.on('data', data => this.session.send(data));
 
     term.attachCustomKeyEventHandler(e => {
       if (e.key === 'F6') {
@@ -78,12 +73,18 @@ export class TerminalComponent implements OnInit, OnDestroy {
     });
 
     window.addEventListener('resize', () => this.fit());
+
+    const session = this.session = this.termService.newSession({ shell: 'c:\\windows\\system32\\cmd.exe' });
+    this.subscriptions = [
+      session.onData.subscribe(data => this.onData(data))
+    ];
+    session.start();
   }
 
   private fit() {
     const term = this.term;
     (term as any).fit();
-    this.termService.resize(term.cols, term.rows);
+    this.session.resize(term.cols, term.rows);
   }
 
   ngOnDestroy() {
@@ -108,7 +109,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   send(data: string, clear = true) {
-    this.termService.send(data);
+    this.session.send(data);
     if (clear) {
       this.term.clear();
     }

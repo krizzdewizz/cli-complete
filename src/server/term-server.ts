@@ -1,14 +1,15 @@
-import { SessionConf } from '@model/model';
+import { SessionConf, TerminalSession } from '@model/model';
 import * as child_process from 'child_process';
 import * as stream from 'stream';
 import { Subject } from 'rxjs/Subject';
 import { spawn } from 'node-pty';
 import { ITerminal } from 'node-pty/lib/interfaces';
+import { Observable } from 'rxjs/Observable';
 
-export class TermSession {
+export class TermSession implements TerminalSession {
 
     private dataSource = new Subject<string>();
-    readonly dataChanged$ = this.dataSource.asObservable();
+    readonly onData = this.dataSource.asObservable();
 
     private process: ITerminal;
 
