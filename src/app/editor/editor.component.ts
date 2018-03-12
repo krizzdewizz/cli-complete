@@ -63,6 +63,13 @@ forever`;
           // tslint:disable-next-line:no-bitwise
           keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],
           run: () => this.break()
+        }),
+
+        ed.addAction({
+          id: 'focus-terminal',
+          label: 'Focus Terminal',
+          keybindings: [monaco.KeyCode.F6],
+          run: () => this.terminalCmp.focus()
         })
       ];
     };
@@ -113,5 +120,9 @@ forever`;
 
   ngOnDestroy(): void {
     this.toDispose.forEach(it => it.dispose());
+  }
+
+  focusEditor() {
+    this.editor.focus();
   }
 }

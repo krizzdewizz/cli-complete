@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, OnDestroy, HostBinding, HostListener } from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy, HostBinding, HostListener, Output, EventEmitter } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
@@ -19,6 +19,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   private term: Terminal;
   private subscriptions: ISubscription[];
+
+  @Output() focusNextGroup = new EventEmitter<void>();
 
   constructor(private elRef: ElementRef, private termService: TerminalService) {
   }
@@ -52,6 +54,16 @@ export class TerminalComponent implements OnInit, OnDestroy {
     });
 
     (term as any).winptyCompatInit();
+
+    // 'native' command line
+    term.on('data', data => this.termService.send(data));
+
+    term.attachCustomKeyEventHandler(e => {
+      if (e.key === 'F6') {
+        this.focusNextGroup.next();
+        return false;
+      }
+    });
 
     setTimeout(() => {
       term.open(this.elRef.nativeElement);
@@ -96,5 +108,9 @@ export class TerminalComponent implements OnInit, OnDestroy {
     if (clear) {
       this.term.clear();
     }
+  }
+
+  focus() {
+    this.term.focus();
   }
 }
