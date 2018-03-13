@@ -63,7 +63,7 @@ PVOID getPebAddress(HANDLE processHandle)
 	return pbi.PebBaseAddress;
 }
 
-#define BUFFER_SIZE 4000
+#define BUFFER_SIZE 2000
 
 string getCwd(int pid, string &outCwd) {
 
