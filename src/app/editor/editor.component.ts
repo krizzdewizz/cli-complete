@@ -5,7 +5,8 @@ import { Style } from '@style/style';
 import { PromptService } from '@services/prompt.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
-import { eventBus } from '@services/app-event';
+import { handleCtrlC } from './ctrl-c';
+import { createEditorActions } from './action/editor-action';
 
 @Component({
   selector: 'clic-editor',
@@ -16,6 +17,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private toDispose: monaco.IDisposable[];
   private subscriptions: ISubscription[] = [];
+  private sessionInfo: SessionInfo;
+  prompt = '';
 
   @ViewChild('editor') editorCmp;
   @ViewChild(TerminalComponent) terminalCmp: TerminalComponent;
@@ -35,10 +38,10 @@ dir
 cls
 forever`;
 
-  constructor(private elRef: ElementRef, private sessionService: SessionService, private promptService: PromptService) {
+  constructor(public elRef: ElementRef, private sessionService: SessionService, private promptService: PromptService) {
   }
 
-  private get editor(): monaco.editor.IStandaloneCodeEditor {
+  get editor(): monaco.editor.IStandaloneCodeEditor {
     return this.editorCmp._editor;
   }
 
@@ -56,61 +59,20 @@ forever`;
       ed.layout();
       ed.focus();
 
-      this.toDispose = [
-        ed.addAction({
-          id: 'send',
-          label: 'Send Line or Selection',
-          keybindings: [monaco.KeyCode.Enter],
-          run: () => this.send()
-        }),
-
-        ed.addAction({
-          id: 'send-break',
-          label: 'Send Break Signal',
-          // tslint:disable-next-line:no-bitwise
-          keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],
-          run: () => this.break()
-        }),
-
-        ed.addAction({
-          id: 'focus-terminal',
-          label: 'Focus Terminal',
-          keybindings: [monaco.KeyCode.F6],
-          run: () => this.terminalCmp.focus()
-        }),
-
-        ed.addAction({
-          id: 'new-terminal',
-          label: 'New Terminal',
-          // tslint:disable-next-line:no-bitwise
-          keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T, undefined)],
-          run: () => eventBus.newTerminal.next()
-        }),
-
-        ed.addAction({
-          id: 'close-terminal',
-          label: 'Close Terminal',
-          // tslint:disable-next-line:no-bitwise
-          keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_W, undefined)],
-          run: () => eventBus.closeTerminal.next(this.elRef.nativeElement)
-        })
-      ];
+      this.toDispose = createEditorActions(this);
     };
 
     setTimeout(initEditor, 1000);
   }
 
-  private break() {
-    const ed = this.editor;
-    if (ed.getSelection().isEmpty()) {
-      this.terminalCmp.send(String.fromCharCode(3));
-    } else {
-      ed.getAction('editor.action.clipboardCopyAction').run();
-    }
+  ctrlC() {
+    handleCtrlC(
+      () => this.terminalCmp.send(String.fromCharCode(3)),
+      () => this.editor.getAction('editor.action.clipboardCopyAction').run()
+    );
   }
 
-  private send() {
-
+  send() {
     if (!this.hasSession) {
       this.restart();
       return;
@@ -154,10 +116,6 @@ forever`;
     this.editor.focus();
   }
 
-  pasteFromClipboard() {
-    this.editor.getAction('editor.action.clipboardPasteAction').run();
-  }
-
   get hasSession() {
     const termCmp = this.terminalCmp;
     if (!termCmp) {
@@ -171,9 +129,6 @@ forever`;
     this.terminalCmp.startSession();
     this.editor.focus();
   }
-
-  prompt = '';
-  private sessionInfo: SessionInfo;
 
   onSessionInfo(sessionInfo: SessionInfo) {
     this.sessionInfo = sessionInfo;

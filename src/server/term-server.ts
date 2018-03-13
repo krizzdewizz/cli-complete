@@ -1,7 +1,7 @@
 import { SessionConf, TerminalSession, SessionInfo } from '@model/model';
 import { Subject } from 'rxjs/Subject';
-import { spawn } from 'node-pty-prebuilt';
-import { ITerminal } from 'node-pty-prebuilt/lib/interfaces';
+import { spawn } from 'node-pty';
+import { ITerminal } from 'node-pty/lib/interfaces';
 
 export class TermSession implements TerminalSession {
 
