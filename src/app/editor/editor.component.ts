@@ -1,10 +1,11 @@
-import { Component, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
 import { SessionService } from '@services/session.service';
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style } from '@style/style';
 import { PromptService } from '@services/prompt.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
+import { eventBus } from '@services/app-event';
 
 @Component({
   selector: 'clic-editor',
@@ -34,7 +35,7 @@ dir
 cls
 forever`;
 
-  constructor(private sessionService: SessionService, private promptService: PromptService) {
+  constructor(private elRef: ElementRef, private sessionService: SessionService, private promptService: PromptService) {
   }
 
   private get editor(): monaco.editor.IStandaloneCodeEditor {
@@ -76,6 +77,22 @@ forever`;
           label: 'Focus Terminal',
           keybindings: [monaco.KeyCode.F6],
           run: () => this.terminalCmp.focus()
+        }),
+
+        ed.addAction({
+          id: 'new-terminal',
+          label: 'New Terminal',
+          // tslint:disable-next-line:no-bitwise
+          keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T, undefined)],
+          run: () => eventBus.newTerminal.next()
+        }),
+
+        ed.addAction({
+          id: 'close-terminal',
+          label: 'Close Terminal',
+          // tslint:disable-next-line:no-bitwise
+          keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_W, undefined)],
+          run: () => eventBus.closeTerminal.next(this.elRef.nativeElement)
         })
       ];
     };

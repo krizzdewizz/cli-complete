@@ -1,4 +1,5 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { eventBus } from '@services/app-event';
 
 @Component({
   selector: 'clic-toolbar',
@@ -7,10 +8,12 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 })
 export class ToolbarComponent implements OnInit {
 
-  @Output() newSession = new EventEmitter<void>();
-
   constructor() { }
 
   ngOnInit() {
+  }
+
+  onNewSession() {
+    eventBus.newTerminal.next();
   }
 }

@@ -1,11 +1,23 @@
 import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 import { SessionService } from '@services/session.service';
+import { Subscription } from 'rxjs/Subscription';
+import { eventBus } from '@services/app-event';
 
 const EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
   componentName: 'clic-editor',
 };
+
+const CLIC_ID = 'clicid';
+
+function acceptLayout(item: GoldenLayout.ContentItem, visitor: (it: GoldenLayout.ContentItem) => void) {
+  visitor(item);
+  const children = item.contentItems;
+  if (children) {
+    children.forEach(child => acceptLayout(child, visitor));
+  }
+}
 
 @Component({
   selector: 'clic-frame',
@@ -15,6 +27,9 @@ const EDITOR: GoldenLayout.ComponentConfig = {
 export class FrameComponent implements OnInit, OnDestroy {
   private config: GoldenLayout.Config;
   private layout: GoldenLayoutX;
+  private subscriptions: Subscription[];
+
+  private static nextId = 0;
 
   @ViewChild('layoutContainer') layoutContainer: ElementRef;
 
@@ -53,21 +68,45 @@ export class FrameComponent implements OnInit, OnDestroy {
       const compRef = this.viewContainer.createComponent(factory);
       container.getElement().append(compRef.location.nativeElement);
       container.compRef = compRef;
+      const id = `ed${FrameComponent.nextId}`;
+      container[CLIC_ID] = id;
+      container.getElement().attr(CLIC_ID, id);
+      FrameComponent.nextId++;
 
       compRef.changeDetectorRef.detectChanges();
     });
+
+    this.subscriptions = [
+      eventBus.newTerminal.subscribe(() => this.onNewTerminal()),
+      eventBus.closeTerminal.subscribe(el => this.onCloseTerminal(el))
+    ];
 
     this.layout.init();
 
     window.addEventListener('resize', () => this.layout.updateSize());
   }
 
-  onNewSession() {
+  onCloseTerminal(el: HTMLElement) {
+    const par = $(el).parents(`[${CLIC_ID}]`);
+    const id = par.attr(CLIC_ID);
+    // const content: GoldenLayout.ContentItem;
+    acceptLayout(this.layout.root, (it: any) => {
+      if (it.componentName === 'clic-editor') {
+        const containerId = it.container[CLIC_ID];
+        if (containerId === id) {
+          it.remove();
+        }
+      }
+    });
+  }
+
+  onNewTerminal() {
     const root = this.layout.root;
     const container = root.contentItems[0] || root;
     container.addChild(EDITOR);
   }
 
   ngOnDestroy() {
+    this.subscriptions.forEach(it => it.unsubscribe());
   }
 }
