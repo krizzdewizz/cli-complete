@@ -3,16 +3,6 @@ import * as child_process from 'child_process';
 
 type Subscriber = (s?: string) => void;
 
-const CWD_TAG = 'cwd:';
-
-function parse(res: string): { cwd?: string, error?: Error } {
-    if (res.startsWith(CWD_TAG)) {
-        return { cwd: res.substring(CWD_TAG.length).trim() };
-    }
-
-    return { error: new Error(res) };
-}
-
 const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
 
 export class CwdServer {
@@ -29,15 +19,12 @@ export class CwdServer {
         delete this.cwds[pid];
     }
 
-    getCwd(pid: number, cb: Subscriber): void {
+    async getCwd(pid: number): Promise<string> {
         const cwd = this.cwds[pid];
         if (cwd) {
-            return cb(cwd);
+            return cwd;
         }
-
-        this.request(pid, wd => {
-            cb(this.cwds[pid] = wd);
-        });
+        return this.request(pid).then(wd => this.cwds[pid] = wd);
     }
 
     private writeRequest(req: string) {
@@ -67,16 +54,10 @@ export class CwdServer {
                     this.subscribers = this.subscribers.slice(1);
 
                     try {
-                        const parsed = parse(response);
-
-                        if (parsed.error) {
-                            this.onError(parsed.error);
+                        if (s) {
+                            s(response);
                         } else {
-                            if (s) {
-                                s(parsed.cwd);
-                            } else {
-                                console.warn(`no subscriber for response.`);
-                            }
+                            console.warn(`no subscriber for response.`);
                         }
                     } catch (err) {
                         this.onError(err);
@@ -105,15 +86,17 @@ export class CwdServer {
 
     reqStart;
 
-    private request(pid: number, cb: Subscriber): void {
+    private async request(pid: number): Promise<string> {
 
         if (!this.init()) {
-            return cb('');
+            return Promise.resolve('');
         }
 
-        this.subscribers.push(cb);
-        this.reqStart = Date.now();
-        this.writeRequest(String(pid));
+        return new Promise<string>(s => {
+            this.subscribers.push(s);
+            this.reqStart = Date.now();
+            this.writeRequest(String(pid));
+        });
     }
 
     destroy() {

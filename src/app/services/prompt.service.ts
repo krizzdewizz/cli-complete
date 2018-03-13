@@ -41,15 +41,12 @@ export class PromptService {
     const pid = sessionInfo.pid;
 
     CWD.cwdMayChanged(pid);
-    setTimeout(() => {
-      CWD.getCwd(pid, cwd => {
-        this.emitPrompt(sessionInfo, cwd);
-      });
-    }, 800);
+    CWD.getCwd(pid).then(cwd => this.emitPrompt(sessionInfo, cwd));
   }
 
   private formatPrompt(sessionInfo: SessionInfo, cwd: string): string {
-    return `pid: ${sessionInfo.pid}, cwd: ${cwd}, t: ${Date.now()}`;
+    // return `pid: ${sessionInfo.pid}, cwd: ${cwd}, t: ${Date.now()}`;
+    return `${cwd}`;
   }
 
   private emitPrompt(sessionInfo: SessionInfo, cwd: string) {
