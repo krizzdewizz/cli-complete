@@ -1,13 +1,10 @@
 @import "colors";
 
 :host {
-   xborder: 1px solid red;
     flex: 1;
-    color: $color-dark;
     margin-bottom: 40px; // ??
     display: flex;
     border-top: 1px solid $color-separator-dark;
     padding-left: 8px;
     padding-top: 3px;
 }
-

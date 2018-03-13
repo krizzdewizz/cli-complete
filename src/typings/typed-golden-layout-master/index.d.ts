@@ -1,6 +1,9 @@
 // Definitions by: Stephen Jelfs <https://github.com/stephenjelfs>
 
 declare interface GoldenLayoutX {
+
+    on(eventName: string, callback: Function, context?: any): void;
+
     /*
      * @param name 	The name of the component, as referred to by componentName in the component configuration.
      * @param component 	A constructor or factory function. Will be invoked with new and two arguments, a
@@ -216,13 +219,13 @@ declare module GoldenLayout {
          * Specifies if the maximise icon should be displayed in the header-bar.
          * Default: true
          */
-        showMaximiseIcon: boolean;
+        showMaximiseIcon?: boolean;
 
         /**
          * Specifies if the close icon should be displayed in the header-bar.
          * Default: true
          */
-        showCloseIcon: boolean;
+        showCloseIcon?: boolean;
     }
 
     export interface Dimensions {

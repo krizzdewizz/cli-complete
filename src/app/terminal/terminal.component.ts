@@ -1,10 +1,10 @@
-import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter, NgZone } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
-import { TerminalService } from '@services/xterm.service';
-import { ISubscription } from 'rxjs/Subscription';
-import { TerminalSession } from '@model/model';
+import { TerminalService } from '@services/terminal.service';
+import { TerminalSession, SessionInfo } from '@model/model';
+import { Style } from '@style/style';
 
 const { clipboard } = window.require('electron');
 
@@ -19,13 +19,15 @@ Terminal.applyAddon(winptyCompat);
 export class TerminalComponent implements OnInit, OnDestroy {
 
   private term: Terminal;
-  private subscriptions: ISubscription[];
   private session: TerminalSession;
+
+  private fontSize = Style.fontSize;
 
   @Output() focusNextGroup = new EventEmitter<void>();
   @Output() pasteFromClipboard = new EventEmitter<void>();
+  @Output() sessionInfo = new EventEmitter<SessionInfo>();
 
-  constructor(private elRef: ElementRef, private termService: TerminalService) {
+  constructor(private elRef: ElementRef, private termService: TerminalService, private zone: NgZone) {
   }
 
   @HostListener('mouseup', ['$event'])
@@ -41,11 +43,27 @@ export class TerminalComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('wheel', ['$event'])
+  onWheel(e: MouseWheelEvent) {
+    if (!e.ctrlKey) {
+      return;
+    }
+
+    const increase = e.deltaY < 0;
+    if (increase) {
+      this.fontSize++;
+    } else if (this.fontSize > 6) {
+      this.fontSize--;
+    }
+    this.term.setOption('fontSize', this.fontSize);
+    this.fit();
+  }
+
   ngOnInit() {
     const term = this.term = new Terminal({
-      fontFamily: 'Consolas',
-      fontSize: 14,
-      letterSpacing: 1,
+      fontFamily: Style.fontFamily,
+      fontSize: this.fontSize,
+      letterSpacing: Style.letterSpacing,
       theme: {
         background: '#1e1e1e',
         foreground: '#dddddd'
@@ -74,10 +92,25 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
     window.addEventListener('resize', () => this.fit());
 
+    this.startSessionInternal();
+  }
+
+  startSession() {
+    this.zone.run(() => this.startSessionInternal());
+  }
+
+  private startSessionInternal() {
+    if (this.session) {
+      return;
+    }
     const session = this.session = this.termService.newSession({ shell: 'c:\\windows\\system32\\cmd.exe' });
-    this.subscriptions = [
-      session.onData.subscribe(data => this.onData(data))
-    ];
+    session.onData.subscribe(data => this.onData(data));
+    session.onExit.subscribe(() => {
+      this.zone.run(() => delete this.session);
+    });
+    session.onSessionInfo.subscribe(sessionInfo => {
+      this.zone.run(() => this.sessionInfo.next(sessionInfo));
+    });
     session.start();
   }
 
@@ -88,7 +121,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(it => it.unsubscribe());
+    this.session.destroy();
+    delete this.session;
   }
 
   private onData(data: string) {
@@ -117,5 +151,9 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   focus() {
     this.term.focus();
+  }
+
+  get hasSession(): boolean {
+    return Boolean(this.session);
   }
 }

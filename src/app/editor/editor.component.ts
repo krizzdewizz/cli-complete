@@ -1,6 +1,10 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { SessionService } from '@services/session.service';
 import { TerminalComponent } from '../terminal/terminal.component';
+import { Style } from '@style/style';
+import { PromptService } from '@services/prompt.service';
+import { ISubscription } from 'rxjs/Subscription';
+import { SessionInfo } from '@model/model';
 
 @Component({
   selector: 'clic-editor',
@@ -10,6 +14,7 @@ import { TerminalComponent } from '../terminal/terminal.component';
 export class EditorComponent implements OnInit, OnDestroy {
 
   private toDispose: monaco.IDisposable[];
+  private subscriptions: ISubscription[] = [];
 
   @ViewChild('editor') editorCmp;
   @ViewChild(TerminalComponent) terminalCmp: TerminalComponent;
@@ -17,7 +22,7 @@ export class EditorComponent implements OnInit, OnDestroy {
   editorOptions: monaco.editor.IEditorConstructionOptions = {
     theme: 'vs-dark',
     lineNumbers: 'off',
-    letterSpacing: 1,
+    letterSpacing: Style.letterSpacing,
     // language: 'javascript',
     // automaticLayout: true
   };
@@ -28,7 +33,7 @@ dir
 cls
 forever`;
 
-  constructor(private sessionService: SessionService) {
+  constructor(private sessionService: SessionService, private promptService: PromptService) {
   }
 
   private get editor(): monaco.editor.IStandaloneCodeEditor {
@@ -52,14 +57,14 @@ forever`;
       this.toDispose = [
         ed.addAction({
           id: 'send',
-          label: 'send',
+          label: 'Send Line or Selection',
           keybindings: [monaco.KeyCode.Enter],
           run: () => this.send()
         }),
 
         ed.addAction({
-          id: 'break',
-          label: 'break',
+          id: 'send-break',
+          label: 'Send Break Signal',
           // tslint:disable-next-line:no-bitwise
           keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],
           run: () => this.break()
@@ -78,7 +83,6 @@ forever`;
   }
 
   private break() {
-    // console.log('breakkkkkkkkkkk');
     const ed = this.editor;
     if (ed.getSelection().isEmpty()) {
       this.terminalCmp.send(String.fromCharCode(3));
@@ -88,6 +92,12 @@ forever`;
   }
 
   private send() {
+
+    if (!this.hasSession) {
+      this.restart();
+      return;
+    }
+
     const ed = this.editor;
     const model = ed.getModel();
     const sel = ed.getSelection();
@@ -101,8 +111,8 @@ forever`;
       text = model.getValueInRange(sel);
     }
 
-
     this.terminalCmp.send(`${text}\r`);
+    this.promptService.promptMayChanged(this.sessionInfo);
 
     const clearLine = false;
     if (clearLine) {
@@ -120,6 +130,7 @@ forever`;
 
   ngOnDestroy(): void {
     this.toDispose.forEach(it => it.dispose());
+    this.subscriptions.forEach(it => it.unsubscribe());
   }
 
   focusEditor() {
@@ -128,5 +139,30 @@ forever`;
 
   pasteFromClipboard() {
     this.editor.getAction('editor.action.clipboardPasteAction').run();
+  }
+
+  get hasSession() {
+    const termCmp = this.terminalCmp;
+    if (!termCmp) {
+      return true;
+    }
+
+    return termCmp.hasSession;
+  }
+
+  restart() {
+    this.terminalCmp.startSession();
+    this.editor.focus();
+  }
+
+  prompt = '';
+  private sessionInfo: SessionInfo;
+
+  onSessionInfo(sessionInfo: SessionInfo) {
+    this.sessionInfo = sessionInfo;
+    this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
+      return this.prompt = prompt;
+    }));
+    this.promptService.promptMayChanged(sessionInfo);
   }
 }

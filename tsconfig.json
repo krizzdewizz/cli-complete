@@ -16,6 +16,9 @@
       "@model/*": [
         "app/model/*"
       ],
+      "@style/*": [
+        "app/style/*"
+      ],
       "@server/*": [
         "server/*"
       ]

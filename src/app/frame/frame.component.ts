@@ -36,31 +36,38 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.layout = new GoldenLayout(this.config, this.layoutContainer.nativeElement);
+
+    this.layout.on('itemDestroyed', ({ container }) => {
+      if (container) {
+        const compRef = container.compRef;
+        if (compRef) {
+          compRef.destroy();
+          delete container.compRef;
+        }
+      }
+    });
+
     this.layout.registerComponent('clic-editor', (container, componentState) => {
       const factory = this.componentFactoryResolver.resolveComponentFactory(EditorComponent);
 
       const compRef = this.viewContainer.createComponent(factory);
       container.getElement().append(compRef.location.nativeElement);
-
-      // compRef.instance.code = componentState.text;
+      container.compRef = compRef;
 
       compRef.changeDetectorRef.detectChanges();
     });
 
     this.layout.init();
 
-    window.addEventListener('resize', () => {
-      this.layout.updateSize();
-    });
-
+    window.addEventListener('resize', () => this.layout.updateSize());
   }
 
   onNewSession() {
-    const x = this.layout.root.contentItems[0];
-    x.addChild(EDITOR);
+    const root = this.layout.root;
+    const container = root.contentItems[0] || root;
+    container.addChild(EDITOR);
   }
 
   ngOnDestroy() {
   }
-
 }

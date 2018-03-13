@@ -9,7 +9,9 @@ import { FrameComponent } from './frame/frame.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { SessionService } from './services/session.service';
 import { TerminalComponent } from './terminal/terminal.component';
-import { TerminalService, RemoteService } from '@services/xterm.service';
+import { TerminalService, RemoteService } from '@services/terminal.service';
+import { PromptComponent } from './prompt/prompt.component';
+import { PromptService } from '@services/prompt.service';
 
 @NgModule({
   declarations: [
@@ -17,7 +19,8 @@ import { TerminalService, RemoteService } from '@services/xterm.service';
     EditorComponent,
     FrameComponent,
     ToolbarComponent,
-    TerminalComponent
+    TerminalComponent,
+    PromptComponent
   ],
   imports: [
     BrowserModule,
@@ -26,7 +29,7 @@ import { TerminalService, RemoteService } from '@services/xterm.service';
   ],
   providers: [
     { provide: TerminalService, useClass: RemoteService },
-    SessionService,
+    SessionService, PromptService
   ],
   entryComponents: [EditorComponent],
   bootstrap: [AppComponent]

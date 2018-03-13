@@ -1,4 +1,4 @@
-import { SessionConf, TerminalSession } from '@model/model';
+import { SessionConf, TerminalSession, SessionInfo } from '@model/model';
 import { Subject } from 'rxjs/Subject';
 import { spawn } from 'node-pty';
 import { ITerminal } from 'node-pty/lib/interfaces';
@@ -7,6 +7,12 @@ export class TermSession implements TerminalSession {
 
     private dataSource = new Subject<string>();
     readonly onData = this.dataSource.asObservable();
+
+    private exitSource = new Subject<string>();
+    readonly onExit = this.exitSource.asObservable();
+
+    private sessionInfoSource = new Subject<SessionInfo>();
+    readonly onSessionInfo = this.sessionInfoSource.asObservable();
 
     private process: ITerminal;
 
@@ -19,16 +25,20 @@ export class TermSession implements TerminalSession {
 
     start() {
         this.process = spawn(this.conf.shell, [], {
-            name: 'xterm-color',
+            name: 'clic-xterm',
             cols: 80,
             rows: 30,
             cwd: process.cwd(),
             env: process.env
         });
 
-        this.process.on('data', data => {
-            // console.log(data);
-            this.dataSource.next(data);
+        this.process.on('data', data => this.dataSource.next(data));
+        this.process.on('exit', () => this.exitSource.next());
+        this.sessionInfoSource.next({
+            title: this.process.process,
+            pid: this.process.pid,
+            cwd: () => process.cwd(),
+            env: process.env
         });
     }
 
@@ -38,9 +48,9 @@ export class TermSession implements TerminalSession {
         }
     }
 
-    stop() {
+    destroy() {
         if (this.process) {
-            this.process.kill();
+            this.process.destroy();
             delete this.process;
         }
     }

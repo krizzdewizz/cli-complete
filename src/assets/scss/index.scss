@@ -5,17 +5,20 @@
 
 @import '../../../node_modules/golden-layout/src/css/goldenlayout-base.css';
 @import '../../../node_modules/golden-layout/src/css/goldenlayout-dark-theme.css';
-
 @import '../../../node_modules/xterm/dist/xterm.css';
 
 body {
-    font-family: Consolas, "Courier New", monospace;
-    font-weight: normal;
-    font-size: 16px;
-    letter-spacing: 1px;
-    xpadding: 10px;
-    // line-height: 19px;
+
+    &, button {
+        font-family: Consolas, "Courier New", monospace;
+        font-weight: normal;
+        font-size: 14px;
+        // letter-spacing: 1px;
+    }
+
     display: flex;
+    color: $color-dark;
+    background: $color-bg-dark;
     flex-direction: column;
     position: absolute;
     top: 0;
@@ -25,7 +28,6 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background: $color-bg-dark;
 }
 
 .__hidden {
