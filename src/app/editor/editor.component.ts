@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { SessionService } from '@services/session.service';
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style } from '@style/style';
@@ -11,7 +11,7 @@ import { SessionInfo } from '@model/model';
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements OnInit, OnDestroy {
+export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private toDispose: monaco.IDisposable[];
   private subscriptions: ISubscription[] = [];
@@ -23,12 +23,13 @@ export class EditorComponent implements OnInit, OnDestroy {
     theme: 'vs-dark',
     lineNumbers: 'off',
     letterSpacing: Style.letterSpacing,
+    minimap: { enabled: false }
     // language: 'javascript',
     // automaticLayout: true
   };
   // code = '';
   // code = String(new Date(Date.now()) + '\n\n');
-  code = `prompt !!READY!!
+  code = `echo off & prompt $s
 dir
 cls
 forever`;
@@ -40,7 +41,7 @@ forever`;
     return this.editorCmp._editor;
   }
 
-  ngOnInit() {
+  ngAfterViewInit() {
 
     this.editorCmp.initMonaco(this.editorCmp.options);
 
