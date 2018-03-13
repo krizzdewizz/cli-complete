@@ -7,6 +7,7 @@ import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
 import { handleCtrlC } from './ctrl-c';
 import { createEditorActions } from './action/editor-action';
+import { waitForMonaco } from './monaco-ready';
 
 @Component({
   selector: 'clic-editor',
@@ -46,10 +47,8 @@ forever`;
   }
 
   ngAfterViewInit() {
-
-    this.editorCmp.initMonaco(this.editorCmp.options);
-
-    const initEditor = () => {
+    waitForMonaco().then(() => {
+      this.editorCmp.initMonaco(this.editorCmp.options);
 
       const ed = this.editor;
       const line = ed.getSelection().startLineNumber;
@@ -60,9 +59,7 @@ forever`;
       ed.focus();
 
       this.toDispose = createEditorActions(this);
-    };
-
-    setTimeout(initEditor, 1000);
+    });
   }
 
   ctrlC() {
