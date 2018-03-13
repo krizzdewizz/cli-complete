@@ -5,6 +5,7 @@ import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
 import { TerminalService } from '@services/terminal.service';
 import { TerminalSession, SessionInfo } from '@model/model';
 import { Style } from '@style/style';
+import { PromptService } from '@services/prompt.service';
 
 const { clipboard } = window.require('electron');
 
@@ -18,6 +19,8 @@ Terminal.applyAddon(winptyCompat);
 })
 export class TerminalComponent implements OnInit, OnDestroy {
 
+  private awaitChunk: boolean;
+  private _sessionInfo: SessionInfo;
   private term: Terminal;
   private session: TerminalSession;
 
@@ -27,7 +30,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
   @Output() pasteFromClipboard = new EventEmitter<void>();
   @Output() sessionInfo = new EventEmitter<SessionInfo>();
 
-  constructor(private elRef: ElementRef, private termService: TerminalService, private zone: NgZone) {
+  constructor(private elRef: ElementRef, private termService: TerminalService, private zone: NgZone, private promptService: PromptService) {
   }
 
   @HostListener('mouseup', ['$event'])
@@ -109,6 +112,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
       this.zone.run(() => delete this.session);
     });
     session.onSessionInfo.subscribe(sessionInfo => {
+      this._sessionInfo = sessionInfo;
       this.zone.run(() => this.sessionInfo.next(sessionInfo));
     });
     session.start();
@@ -130,6 +134,11 @@ export class TerminalComponent implements OnInit, OnDestroy {
     this.term.scrollToBottom();
 
     this.autoAnswerTerminateBatchJobMessage(data);
+
+    if (this.awaitChunk) {
+      this.awaitChunk = false;
+      this.promptService.promptMayChanged(this._sessionInfo);
+    }
   }
 
   private autoAnswerTerminateBatchJobMessage(data: string) {
@@ -143,6 +152,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   send(data: string, clear = true) {
+    this.awaitChunk = true;
     this.session.send(data);
     if (clear) {
       this.term.clear();

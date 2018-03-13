@@ -112,7 +112,6 @@ forever`;
     }
 
     this.terminalCmp.send(`${text}\r`);
-    this.promptService.promptMayChanged(this.sessionInfo);
 
     const clearLine = false;
     if (clearLine) {

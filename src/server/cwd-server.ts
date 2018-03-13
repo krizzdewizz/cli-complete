@@ -3,7 +3,8 @@ import * as child_process from 'child_process';
 
 type Subscriber = (s?: string) => void;
 
-const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
+const SERVER = path.join(__dirname, 'getcwd/getcwd');
+// const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
 
 export class CwdServer {
 
