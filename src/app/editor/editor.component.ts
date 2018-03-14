@@ -104,7 +104,7 @@ forever`;
 
   ctrlC() {
     handleCtrlC(
-      () => this.terminalCmp.send(String.fromCharCode(3)),
+      () => this.terminalCmp.send(String.fromCharCode(3), false),
       () => this.editor.getAction('editor.action.clipboardCopyAction').run()
     );
   }
@@ -184,7 +184,7 @@ forever`;
     this.sessionInfo = sessionInfo;
     this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
       this.prompt = prompt;
-      this.setTabTitle(prompt);
+      this.setTabTitle(prompt || 'clic');
     }));
     this.promptService.promptMayChanged(sessionInfo);
   }

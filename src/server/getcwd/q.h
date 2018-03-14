@@ -65,7 +65,7 @@ PVOID getPebAddress(HANDLE processHandle)
 
 #define BUFFER_SIZE 1024
 
-string getCwd(int pid, string &outCwd, string &outTitle) {
+string getCwd(int pid, string &outCwd, string &outTitle, string &outCommandLine) {
 
 	auto processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
 	Handle toClose(processHandle);
@@ -85,14 +85,14 @@ string getCwd(int pid, string &outCwd, string &outTitle) {
 
 	// CurrentDirectoryPath
 	{
-		UNICODE_STRING dirPath;
-		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, CurrentDirectoryPath), &dirPath, sizeof(dirPath), NULL))
+		UNICODE_STRING s;
+		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, CurrentDirectoryPath), &s, sizeof(s), NULL))
 		{
 			return "cannot get directory path";
 		}
 
-		WCHAR dirPathContents[BUFFER_SIZE];
-		if (!ReadProcessMemory(processHandle, dirPath.Buffer, dirPathContents, BUFFER_SIZE, NULL))
+		WCHAR c[BUFFER_SIZE];
+		if (!ReadProcessMemory(processHandle, s.Buffer, c, BUFFER_SIZE, NULL))
 		{
 			char q[1000];
 			sprintf_s(q, 1000, "cannot get directory path contents (%d)", GetLastError());
@@ -100,21 +100,21 @@ string getCwd(int pid, string &outCwd, string &outTitle) {
 		}
 
 		char buf[BUFFER_SIZE * 2];
-		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", dirPath.Length / 2, dirPathContents);
+		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", s.Length / 2, c);
 
 		outCwd = buf;
 	}
 
 	// WindowTitle
 	{
-		UNICODE_STRING title;
-		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, WindowTitle), &title, sizeof(title), NULL))
+		UNICODE_STRING s;
+		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, WindowTitle), &s, sizeof(s), NULL))
 		{
-			return "cannot get directory path";
+			return "cannot get title";
 		}
 
-		WCHAR titleContents[BUFFER_SIZE];
-		if (!ReadProcessMemory(processHandle, title.Buffer, titleContents, BUFFER_SIZE, NULL))
+		WCHAR c[BUFFER_SIZE];
+		if (!ReadProcessMemory(processHandle, s.Buffer, c, BUFFER_SIZE, NULL))
 		{
 			char q[1000];
 			sprintf_s(q, 1000, "cannot get title contents (%d)", GetLastError());
@@ -122,9 +122,31 @@ string getCwd(int pid, string &outCwd, string &outTitle) {
 		}
 
 		char buf[BUFFER_SIZE * 2];
-		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", title.Length / 2, titleContents);
+		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", s.Length / 2, c);
 
 		outTitle = buf;
+	}
+
+	// CommandLine
+	{
+		UNICODE_STRING s;
+		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, CommandLine), &s, sizeof(s), NULL))
+		{
+			return "cannot get command line";
+		}
+
+		WCHAR c[BUFFER_SIZE];
+		if (!ReadProcessMemory(processHandle, s.Buffer, c, BUFFER_SIZE, NULL))
+		{
+			char q[1000];
+			sprintf_s(q, 1000, "cannot get command line contents (%d)", GetLastError());
+			return q;
+		}
+
+		char buf[BUFFER_SIZE * 2];
+		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", s.Length / 2, c);
+
+		outCommandLine = buf;
 	}
 
 	return "";

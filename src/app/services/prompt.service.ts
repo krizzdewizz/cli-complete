@@ -40,6 +40,13 @@ export class PromptService {
 
   private prompts: { [pid: number]: EventEmitter<string> } = {};
 
+  clearPrompt(sessionInfo: SessionInfo) {
+    const p = this.prompts[sessionInfo.pid];
+    if (p) {
+      this.zone.run(() => p.next(''));
+    }
+  }
+
   getPrompt(sessionInfo: SessionInfo): Observable<string> {
     const pid = sessionInfo.pid;
     const p = this.prompts[pid];
@@ -83,7 +90,7 @@ export class PromptService {
   }
 
   private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {
-    return `${formatCwd(procInfo.cwd)} - ${formatTitle(path.basename(procInfo.title))}`;
+    return `${formatCwd(procInfo.cwd)} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
   }
 
   private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo) {

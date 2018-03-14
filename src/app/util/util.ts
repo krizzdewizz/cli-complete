@@ -7,6 +7,9 @@ export interface Node {
 }
 
 export function accept<T extends Node>(node: T, visitor: (node: T) => void) {
+    if (!node) {
+        return;
+    }
     visitor(node);
     const children = node.children;
     if (children) {

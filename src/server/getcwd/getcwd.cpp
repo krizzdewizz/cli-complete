@@ -19,8 +19,8 @@ int err(string msg) {
 	return GetLastError();
 }
 
-void writeData(const string &cwd, const string &title) {
-	cout << trim(cwd) << "?" << trim(title) << endl;
+void writeData(const string &cwd, const string &title, const string &commandLine) {
+	cout << trim(cwd) << "?" << trim(title) << "?" << commandLine << endl;
 }
 
 void loop() {
@@ -35,10 +35,11 @@ void loop() {
 
 		string cwd;
 		string title;
-		auto error = getCwd(pid, cwd, title);
+		string commandLine;
+		auto error = getCwd(pid, cwd, title, commandLine);
 
 		if (error.empty()) {
-			writeData(cwd, title);
+			writeData(cwd, title, commandLine);
 		}
 		else {
 			err(error);
@@ -56,10 +57,11 @@ int main(int argc, char *argv[]) {
 
 	string cwd;
 	string title;
-	auto error = getCwd(pid, cwd, title);
+	string commandLine;
+	auto error = getCwd(pid, cwd, title, commandLine);
 
 	if (error.empty()) {
-		writeData(cwd, title);
+		writeData(cwd, title, commandLine);
 		return 0;
 	}
 

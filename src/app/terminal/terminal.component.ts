@@ -107,7 +107,11 @@ export class TerminalComponent implements OnInit, OnDestroy {
     }
     const session = this.session = this.termService.newSession({ shell: 'c:\\windows\\system32\\cmd.exe' });
     session.onData.subscribe(data => this.onData(data));
-    session.onExit.subscribe(() => this.zone.run(() => delete this.session));
+    session.onExit.subscribe(() => this.zone.run(() => {
+      this.promptService.clearPrompt(this._sessionInfo);
+      delete this.session;
+      delete this._sessionInfo;
+    }));
     session.onSessionInfo.subscribe(sessionInfo => {
       this._sessionInfo = sessionInfo;
       this.zone.run(() => this.sessionInfo.next(sessionInfo));

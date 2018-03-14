@@ -4,6 +4,7 @@ import * as child_process from 'child_process';
 export interface ProcessInfo {
     cwd?: string;
     title?: string;
+    commandLine?: string;
 }
 
 type Subscriber = (s?: ProcessInfo) => void;
@@ -12,7 +13,8 @@ function parseResponse(s: string): ProcessInfo {
     const all = s.split('?');
     return {
         cwd: all[0],
-        title: all[1]
+        title: all[1],
+        commandLine: all[2]
     };
 }
 
