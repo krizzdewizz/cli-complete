@@ -18,6 +18,14 @@ async function findPid(rootPid: number) {
 
 const CWD: CwdServer = _CwdServer.INSTANCE;
 
+function formatTitle(title: string) {
+  return path.basename(title);
+}
+
+function formatCwd(cwd: string) {
+  return cwd.length === 1 ? `${cwd}:\\` : cwd; // windows
+}
+
 @Injectable()
 export class PromptService {
   info = new EventEmitter<string>();
@@ -75,7 +83,7 @@ export class PromptService {
   }
 
   private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {
-    return `${procInfo.cwd} - ${path.basename(procInfo.title)}`;
+    return `${formatCwd(procInfo.cwd)} - ${formatTitle(path.basename(procInfo.title))}`;
   }
 
   private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo) {

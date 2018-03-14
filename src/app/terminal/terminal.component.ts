@@ -8,6 +8,7 @@ import { Style } from '@style/style';
 import { PromptService } from '@services/prompt.service';
 import { autoAnswerYes } from './auto-answer-yes';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
+import { mapInternalCommand } from './internal-command';
 
 const { clipboard } = window.require('electron');
 
@@ -141,7 +142,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   send(data: string, clear = true) {
     this.awaitChunk = true;
-    this.session.send(data);
+    this.session.send(mapInternalCommand(data));
     if (clear) {
       this.term.clear();
     }
