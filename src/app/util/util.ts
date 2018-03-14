@@ -4,15 +4,52 @@ export function formatPath(path: string): string {
 
 export interface Node {
     children?: Node[];
+    contentItems?: Node[];
+    parent: Node;
 }
 
-export function accept<T extends Node>(node: T, visitor: (node: T) => void) {
+export function findAncestor<T extends Node>(node: T, filter: (node: T) => boolean) {
+    return acceptParents(node, n => {
+        if (filter(n)) {
+            return n;
+        }
+    });
+}
+
+export function findDescendant<T extends Node>(node: T, filter: (node: T) => boolean) {
+    return accept(node, n => {
+        if (filter(n)) {
+            return n;
+        }
+    });
+}
+
+export function acceptParents<R, T extends Node>(node: T, visitor: (node: T) => R): R {
+    let result;
+    let it = node;
+    while (it) {
+        if (result = visitor(it)) {
+            return result;
+        }
+        it = it.parent as any;
+    }
+    return result;
+}
+
+export function accept<R, T extends Node>(node: T, visitor: (node: T) => R): R {
     if (!node) {
         return;
     }
-    visitor(node);
-    const children = node.children;
+    let result;
+    if (result = visitor(node)) {
+        return result;
+    }
+    const children = node.children || node.contentItems;
     if (children) {
-        children.forEach(it => accept(it, visitor));
+        for (const child of children) {
+            if (result = accept(child, visitor)) {
+                return result;
+            }
+        }
     }
 }

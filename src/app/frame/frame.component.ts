@@ -85,7 +85,6 @@ export class FrameComponent implements OnInit, OnDestroy {
     this.subscriptions = [
       appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
       appEvent.closeTerminal.subscribe(el => this.onCloseTerminal(el)),
-      appEvent.pipeToQEditor.subscribe(el => this.onPipeToQEditor(el))
     ];
 
     this.layout.init();
@@ -112,23 +111,6 @@ export class FrameComponent implements OnInit, OnDestroy {
     const root = this.layout.root;
     const container = root.contentItems[0] || root;
     container.addChild(EDITOR);
-  }
-
-  onPipeToQEditor(el: HTMLElement) {
-
-    const id = this.getClicId(el);
-    acceptLayout(this.layout.root, (it: any) => {
-      if (it.componentName === 'clic-editor') {
-        const container = it.container;
-        if (container[CLIC_ID] === id) {
-          // const root = this.layout.root;
-          // const container = root.contentItems[0] || root;
-          const stack = container.parent.parent;
-          stack.addChild(Q_EDITOR);
-        }
-      }
-    });
-
   }
 
   ngOnDestroy() {
