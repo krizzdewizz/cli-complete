@@ -14,6 +14,7 @@ import { TerminalService, RemoteService } from '@services/terminal.service';
 import { PromptComponent } from './prompt/prompt.component';
 import { PromptService } from '@services/prompt.service';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
+import { QEditorComponent } from './q-editor/q-editor.component';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import { FontSizeWheelService } from '@services/font-size-wheel.service';
     FrameComponent,
     ToolbarComponent,
     TerminalComponent,
-    PromptComponent
+    PromptComponent,
+    QEditorComponent
   ],
   imports: [
     BrowserModule,
@@ -36,7 +38,7 @@ import { FontSizeWheelService } from '@services/font-size-wheel.service';
     PromptService,
     FontSizeWheelService
   ],
-  entryComponents: [EditorComponent],
+  entryComponents: [EditorComponent, QEditorComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

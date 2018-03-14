@@ -1,12 +1,18 @@
-import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, ComponentRef } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 import { SessionService } from '@services/session.service';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
+import { QEditorComponent } from '../q-editor/q-editor.component';
 
 const EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
   componentName: 'clic-editor',
+};
+
+const Q_EDITOR: GoldenLayout.ComponentConfig = {
+  type: 'component',
+  componentName: 'q-editor',
 };
 
 const CLIC_ID = 'clicid';
@@ -69,36 +75,29 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     this.layout.on('stateChanged', () => appEvent.layout.next());
 
-    this.layout.registerComponent('clic-editor', (container, componentState) => {
-      const factory = this.componentFactoryResolver.resolveComponentFactory<EditorComponent>(EditorComponent);
-
-      const compRef = this.viewContainer.createComponent(factory);
-      container.getElement().append(compRef.location.nativeElement);
-      container.compRef = compRef;
-      const id = `ed${FrameComponent.nextId}`;
-      container[CLIC_ID] = id;
-      container.getElement().attr(CLIC_ID, id);
-      FrameComponent.nextId++;
-      compRef.instance.setTabTitle = title => {
-        return container.setTitle(title);
-      };
-
-      compRef.changeDetectorRef.detectChanges();
+    this.layout.registerComponent('clic-editor', container => {
+      const compRef = this.createComponent<EditorComponent>(container, EditorComponent);
+      compRef.instance.setTabTitle = title => container.setTitle(title);
     });
+
+    this.layout.registerComponent('q-editor', container => this.createComponent<QEditorComponent>(container, QEditorComponent));
 
     this.subscriptions = [
       appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
-      appEvent.closeTerminal.subscribe(el => this.onCloseTerminal(el))
+      appEvent.closeTerminal.subscribe(el => this.onCloseTerminal(el)),
+      appEvent.pipeToQEditor.subscribe(el => this.onPipeToQEditor(el))
     ];
 
     this.layout.init();
 
     window.addEventListener('resize', () => this.layout.updateSize());
   }
+  private getClicId(el: HTMLElement) {
+    return $(el).parents(`[${CLIC_ID}]`).attr(CLIC_ID);
+  }
 
   onCloseTerminal(el: HTMLElement) {
-    const par = $(el).parents(`[${CLIC_ID}]`);
-    const id = par.attr(CLIC_ID);
+    const id = this.getClicId(el);
     acceptLayout(this.layout.root, (it: any) => {
       if (it.componentName === 'clic-editor') {
         const containerId = it.container[CLIC_ID];
@@ -115,7 +114,37 @@ export class FrameComponent implements OnInit, OnDestroy {
     container.addChild(EDITOR);
   }
 
+  onPipeToQEditor(el: HTMLElement) {
+
+    const id = this.getClicId(el);
+    acceptLayout(this.layout.root, (it: any) => {
+      if (it.componentName === 'clic-editor') {
+        const container = it.container;
+        if (container[CLIC_ID] === id) {
+          // const root = this.layout.root;
+          // const container = root.contentItems[0] || root;
+          const stack = container.parent.parent;
+          stack.addChild(Q_EDITOR);
+        }
+      }
+    });
+
+  }
+
   ngOnDestroy() {
     this.subscriptions.forEach(it => it.unsubscribe());
+  }
+
+  private createComponent<T>(container, classs: Type<T>): ComponentRef<T> {
+    const factory = this.componentFactoryResolver.resolveComponentFactory<T>(classs);
+    const compRef = this.viewContainer.createComponent(factory);
+    container.getElement().append(compRef.location.nativeElement);
+    container.compRef = compRef;
+    const id = `ed${FrameComponent.nextId}`;
+    container[CLIC_ID] = id;
+    container.getElement().attr(CLIC_ID, id);
+    FrameComponent.nextId++;
+    compRef.changeDetectorRef.detectChanges();
+    return compRef;
   }
 }

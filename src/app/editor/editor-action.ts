@@ -16,6 +16,14 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         }),
 
         ed.addAction({
+            id: 'pipe-to-editor',
+            label: 'Pipe to Editor',
+            keybindings: [monaco.KeyCode.F9],
+            run: () => appEvent.pipeToQEditor.next(editor.elRef.nativeElement),
+            keybindingContext: 'editorTextFocus'
+        }),
+
+        ed.addAction({
             id: 'select-suggestion-and-send',
             label: 'Selection Suggestion and Send',
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Shift | monaco.KeyCode.Enter, undefined)],
