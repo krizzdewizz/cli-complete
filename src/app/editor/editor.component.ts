@@ -11,6 +11,7 @@ import { waitForMonaco } from './monaco-ready';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { appEvent } from '@services/app-event';
 import { EditorHistory } from './history';
+import { HistoryCompletionItemProvider } from './history-completion-item-provider';
 
 @Component({
   selector: 'clic-editor',
@@ -37,7 +38,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     theme: 'vs-dark',
     lineNumbers: 'off',
     minimap: { enabled: false },
-    mouseWheelZoom: true
+    mouseWheelZoom: true,
+    acceptSuggestionOnEnter: 'off'
     // language: 'javascript',
   };
   // code = '';
@@ -58,6 +60,15 @@ forever`;
     return this.editorCmp._editor;
   }
 
+  selectSuggestion() {
+    const ed = this.editor as any;
+    const suggestWidget = ed.contentWidgets['editor.widget.suggestWidget'].widget;
+    const item = suggestWidget.getFocusedItem();
+    suggestWidget.onDidSelectEmitter.fire(item);
+    this.editor.focus();
+    this.send();
+  }
+
   ngAfterViewInit() {
 
     this.subscriptions.push(
@@ -71,6 +82,8 @@ forever`;
       }
 
       const ed = this.editor;
+
+      monaco.languages.registerCompletionItemProvider('*', new HistoryCompletionItemProvider(this.history));
 
       ed.getDomNode().addEventListener('wheel', e => {
         if (this.fontSizeWheelService.onWheel(this.style, e)) {

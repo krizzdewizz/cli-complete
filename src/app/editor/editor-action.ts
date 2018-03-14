@@ -16,6 +16,14 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         }),
 
         ed.addAction({
+            id: 'select-suggestion-and-send',
+            label: 'Selection Suggestion and Send',
+            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Shift | monaco.KeyCode.Enter, undefined)],
+            run: () => editor.selectSuggestion(),
+            keybindingContext: 'suggestWidgetVisible'
+        }),
+
+        ed.addAction({
             id: 'send-break',
             label: 'Send Break Signal',
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],

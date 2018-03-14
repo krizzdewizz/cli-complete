@@ -3,12 +3,19 @@ import { EventEmitter } from '@angular/core';
 export class EditorHistory {
     select = new EventEmitter<string>();
 
-    private list: string[] = [];
+    private _list: string[] = [];
+    get list(): string[] {
+        return this._list;
+    }
     private index = 0;
 
-    push(...it: string[]) {
-        this.list.push(...it);
-        this.index = this.list.length - 1;
+    push(s: string) {
+        const list = this.list;
+        if (list[list.length - 1] === s) {
+            return;
+        }
+        list.push(s);
+        this.index = list.length - 1;
     }
 
     prev() {
