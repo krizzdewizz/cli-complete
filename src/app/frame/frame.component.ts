@@ -2,7 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFa
 import { EditorComponent } from '../editor/editor.component';
 import { SessionService } from '@services/session.service';
 import { Subscription } from 'rxjs/Subscription';
-import { eventBus } from '@services/app-event';
+import { appEvent } from '@services/app-event';
 
 const EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
@@ -45,7 +45,12 @@ export class FrameComponent implements OnInit, OnDestroy {
         content: [
           EDITOR
         ]
-      }]
+      }],
+      labels: {
+        close: 'Close',
+        maximise: 'Maximize',
+        minimise: 'Minimize',
+      }
     };
   }
 
@@ -61,6 +66,8 @@ export class FrameComponent implements OnInit, OnDestroy {
         }
       }
     });
+
+    this.layout.on('stateChanged', () => appEvent.layout.next());
 
     this.layout.registerComponent('clic-editor', (container, componentState) => {
       const factory = this.componentFactoryResolver.resolveComponentFactory<EditorComponent>(EditorComponent);
@@ -80,8 +87,8 @@ export class FrameComponent implements OnInit, OnDestroy {
     });
 
     this.subscriptions = [
-      eventBus.newTerminal.subscribe(() => this.onNewTerminal()),
-      eventBus.closeTerminal.subscribe(el => this.onCloseTerminal(el))
+      appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
+      appEvent.closeTerminal.subscribe(el => this.onCloseTerminal(el))
     ];
 
     this.layout.init();
@@ -105,9 +112,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   onNewTerminal() {
     const root = this.layout.root;
     const container = root.contentItems[0] || root;
-    const child = container.addChild(EDITOR);
-    console.log('cccc', child);
-
+    container.addChild(EDITOR);
   }
 
   ngOnDestroy() {

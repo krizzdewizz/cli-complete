@@ -9,6 +9,8 @@ import { handleCtrlC } from './ctrl-c';
 import { createEditorActions } from './editor-action';
 import { waitForMonaco } from './monaco-ready';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
+import { appEvent } from '@services/app-event';
+import { EditorHistory } from './history';
 
 @Component({
   selector: 'clic-editor',
@@ -21,6 +23,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private subscriptions: ISubscription[] = [];
   private sessionInfo: SessionInfo;
   private style = { ...Style };
+  history = new EditorHistory();
 
   prompt = '';
 
@@ -56,8 +59,16 @@ forever`;
   }
 
   ngAfterViewInit() {
+
+    this.subscriptions.push(
+      appEvent.layout.subscribe(() => this.editor.layout()),
+      this.history.select.subscribe(item => this.selectHistory(item))
+    );
+
     waitForMonaco().then(() => {
-      this.editorCmp.initMonaco(this.editorCmp.options);
+      if (!this.editorCmp._editor) {
+        this.editorCmp.initMonaco(this.editorCmp.options);
+      }
 
       const ed = this.editor;
 
@@ -85,6 +96,18 @@ forever`;
     );
   }
 
+  selectHistory(text: string) {
+    const ed = this.editor;
+    const model = ed.getModel();
+    const sel = ed.getSelection();
+    const line = sel.startLineNumber;
+    const maxCol = model.getLineMaxColumn(line);
+    ed.executeEdits('', [{
+      identifier: { major: 1, minor: 0 },
+      range: new monaco.Range(line, 1, line, maxCol), text, forceMoveMarkers: true
+    }]);
+  }
+
   send() {
     if (!this.hasSession) {
       this.restart();
@@ -104,6 +127,7 @@ forever`;
       text = model.getValueInRange(sel);
     }
 
+    this.history.push(text);
     this.terminalCmp.send(`${text}\r`);
 
     const clearLine = false;

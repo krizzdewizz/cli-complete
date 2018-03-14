@@ -39,6 +39,10 @@ body {
     xborder: 1px solid red;
 }
 
+.lm_popout {
+    display: none;
+}
+
 ngx-monaco-editor {
     height: 120px !important;
 }

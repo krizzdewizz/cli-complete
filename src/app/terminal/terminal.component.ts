@@ -117,7 +117,9 @@ export class TerminalComponent implements OnInit, OnDestroy {
   private fit() {
     const term = this.term;
     (term as any).fit();
-    this.session.resize(term.cols, term.rows);
+    if (this.session) {
+      this.session.resize(term.cols, term.rows);
+    }
   }
 
   ngOnDestroy() {

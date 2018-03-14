@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { eventBus } from '@services/app-event';
+import { appEvent } from '@services/app-event';
 
 @Component({
   selector: 'clic-toolbar',
@@ -14,6 +14,6 @@ export class ToolbarComponent implements OnInit {
   }
 
   onNewSession() {
-    eventBus.newTerminal.next();
+    appEvent.newTerminal.next();
   }
 }

@@ -1,6 +1,7 @@
 import { EditorComponent } from './editor.component';
-import { eventBus } from '@services/app-event';
+import { appEvent } from '@services/app-event';
 
+// tslint:disable:no-bitwise
 export function createEditorActions(editor: EditorComponent): monaco.IDisposable[] {
 
     const ed = editor.editor;
@@ -17,7 +18,6 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         ed.addAction({
             id: 'send-break',
             label: 'Send Break Signal',
-            // tslint:disable-next-line:no-bitwise
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],
             run: () => editor.ctrlC()
         }),
@@ -32,17 +32,29 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         ed.addAction({
             id: 'new-terminal',
             label: 'New Terminal',
-            // tslint:disable-next-line:no-bitwise
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T, undefined)],
-            run: () => eventBus.newTerminal.next()
+            run: () => appEvent.newTerminal.next()
         }),
 
         ed.addAction({
             id: 'close-terminal',
             label: 'Close Terminal',
-            // tslint:disable-next-line:no-bitwise
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_W, undefined)],
-            run: () => eventBus.closeTerminal.next(editor.elRef.nativeElement)
-        })
+            run: () => appEvent.closeTerminal.next(editor.elRef.nativeElement)
+        }),
+
+        ed.addAction({
+            id: 'history-next',
+            label: 'History Next',
+            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.RightArrow, undefined)],
+            run: () => editor.history.next()
+        }),
+
+        ed.addAction({
+            id: 'history-prev',
+            label: 'History Previous',
+            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow, undefined)],
+            run: () => editor.history.prev()
+        }),
     ];
 }
