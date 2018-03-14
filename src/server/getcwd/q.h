@@ -63,16 +63,16 @@ PVOID getPebAddress(HANDLE processHandle)
 	return pbi.PebBaseAddress;
 }
 
-#define BUFFER_SIZE 3000
+#define BUFFER_SIZE 1024
 
-string getCwd(int pid, string &outCwd) {
+string getCwd(int pid, string &outCwd, string &outTitle) {
 
 	auto processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
 	Handle toClose(processHandle);
 
 	if (processHandle == 0)
 	{
-		return "cannot open process";
+		return ""; // no error, process not found or not accessible
 	}
 
 	auto pebAddress = getPebAddress(processHandle);
@@ -83,24 +83,49 @@ string getCwd(int pid, string &outCwd) {
 		return "cannot get process parameters";
 	}
 
-	UNICODE_STRING dirPath;
-	if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, CurrentDirectoryPath), &dirPath, sizeof(dirPath), NULL))
+	// CurrentDirectoryPath
 	{
-		return "cannot get directory path";
+		UNICODE_STRING dirPath;
+		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, CurrentDirectoryPath), &dirPath, sizeof(dirPath), NULL))
+		{
+			return "cannot get directory path";
+		}
+
+		WCHAR dirPathContents[BUFFER_SIZE];
+		if (!ReadProcessMemory(processHandle, dirPath.Buffer, dirPathContents, BUFFER_SIZE, NULL))
+		{
+			char q[1000];
+			sprintf_s(q, 1000, "cannot get directory path contents (%d)", GetLastError());
+			return q;
+		}
+
+		char buf[BUFFER_SIZE * 2];
+		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", dirPath.Length / 2, dirPathContents);
+
+		outCwd = buf;
 	}
 
-	WCHAR dirPathContents[BUFFER_SIZE];
-	if (!ReadProcessMemory(processHandle, dirPath.Buffer, dirPathContents, BUFFER_SIZE, NULL))
+	// WindowTitle
 	{
-		char q[1000];
-		sprintf_s(q, 1000, "cannot get directory path contents (%d)", GetLastError());
-		return q;
+		UNICODE_STRING title;
+		if (!ReadProcessMemory(processHandle, (PCHAR)processParams + offsetof(Q, WindowTitle), &title, sizeof(title), NULL))
+		{
+			return "cannot get directory path";
+		}
+
+		WCHAR titleContents[BUFFER_SIZE];
+		if (!ReadProcessMemory(processHandle, title.Buffer, titleContents, BUFFER_SIZE, NULL))
+		{
+			char q[1000];
+			sprintf_s(q, 1000, "cannot get title contents (%d)", GetLastError());
+			return q;
+		}
+
+		char buf[BUFFER_SIZE * 2];
+		sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", title.Length / 2, titleContents);
+
+		outTitle = buf;
 	}
-
-	char buf[BUFFER_SIZE * 2];
-	sprintf_s(buf, BUFFER_SIZE * 2, "%.*S\n", dirPath.Length / 2, dirPathContents);
-
-	outCwd = buf;
 
 	return "";
 }

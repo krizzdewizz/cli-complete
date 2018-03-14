@@ -6,8 +6,9 @@ import { PromptService } from '@services/prompt.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
 import { handleCtrlC } from './ctrl-c';
-import { createEditorActions } from './action/editor-action';
+import { createEditorActions } from './editor-action';
 import { waitForMonaco } from './monaco-ready';
+import { FontSizeWheelService } from '@services/font-size-wheel.service';
 
 @Component({
   selector: 'clic-editor',
@@ -19,18 +20,22 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private toDispose: monaco.IDisposable[];
   private subscriptions: ISubscription[] = [];
   private sessionInfo: SessionInfo;
+  private style = { ...Style };
+
   prompt = '';
+
+  setTabTitle: (title: string) => void = () => undefined;
 
   @ViewChild('editor') editorCmp;
   @ViewChild(TerminalComponent) terminalCmp: TerminalComponent;
 
   editorOptions: monaco.editor.IEditorConstructionOptions = {
+    ...this.style,
     theme: 'vs-dark',
     lineNumbers: 'off',
-    letterSpacing: Style.letterSpacing,
-    minimap: { enabled: false }
+    minimap: { enabled: false },
+    mouseWheelZoom: true
     // language: 'javascript',
-    // automaticLayout: true
   };
   // code = '';
   // code = String(new Date(Date.now()) + '\n\n');
@@ -39,7 +44,11 @@ dir
 cls
 forever`;
 
-  constructor(public elRef: ElementRef, private sessionService: SessionService, private promptService: PromptService) {
+  constructor(
+    public elRef: ElementRef,
+    private sessionService: SessionService,
+    private promptService: PromptService,
+    private fontSizeWheelService: FontSizeWheelService) {
   }
 
   get editor(): monaco.editor.IStandaloneCodeEditor {
@@ -51,6 +60,13 @@ forever`;
       this.editorCmp.initMonaco(this.editorCmp.options);
 
       const ed = this.editor;
+
+      ed.getDomNode().addEventListener('wheel', e => {
+        if (this.fontSizeWheelService.onWheel(this.style, e)) {
+          ed.updateOptions({ fontSize: this.style.fontSize });
+        }
+      });
+
       const line = ed.getSelection().startLineNumber;
       const maxCol = ed.getModel().getLineMaxColumn(line);
       ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
@@ -130,7 +146,8 @@ forever`;
   onSessionInfo(sessionInfo: SessionInfo) {
     this.sessionInfo = sessionInfo;
     this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
-      return this.prompt = prompt;
+      this.prompt = prompt;
+      this.setTabTitle(prompt);
     }));
     this.promptService.promptMayChanged(sessionInfo);
   }

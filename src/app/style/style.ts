@@ -5,6 +5,7 @@ export interface Style {
 }
 
 export const Style: Style = {
-    fontFamily: 'Consolas',
+    // fontFamily: 'Consolas',
+    fontFamily: 'Fira Code',
     fontSize: 14
 };

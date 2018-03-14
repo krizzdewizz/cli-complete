@@ -1,4 +1,4 @@
-import { EditorComponent } from '../editor.component';
+import { EditorComponent } from './editor.component';
 import { eventBus } from '@services/app-event';
 
 export function createEditorActions(editor: EditorComponent): monaco.IDisposable[] {
@@ -10,7 +10,8 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
             id: 'send',
             label: 'Send Line or Selection',
             keybindings: [monaco.KeyCode.Enter],
-            run: () => editor.send()
+            run: () => editor.send(),
+            keybindingContext: 'editorTextFocus'
         }),
 
         ed.addAction({

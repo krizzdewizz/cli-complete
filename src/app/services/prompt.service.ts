@@ -1,16 +1,34 @@
 import { Injectable, EventEmitter, NgZone } from '@angular/core';
-import { CwdServer } from '@server/cwd-server';
+import { CwdServer, ProcessInfo } from '@server/cwd-server';
 import { Observable } from 'rxjs/Observable';
 import { SessionInfo } from '@model/model';
+import { accept } from '@util/util';
 
 const { remote } = window.require('electron');
-
 const { CwdServer: _CwdServer } = remote.require('./server/cwd-server');
+const { processTree } = remote.require('./server/process-tree');
+const path = remote.require('path');
+
+async function findPid(rootPid: number) {
+  const tree = await processTree(rootPid);
+  let lastChild;
+  accept(tree, node => lastChild = node);
+  return lastChild.pid;
+}
 
 const CWD: CwdServer = _CwdServer.INSTANCE;
 
 @Injectable()
 export class PromptService {
+  info = new EventEmitter<string>();
+
+  private infoTimer;
+
+  showInfoForAWhile(msg: string) {
+    clearTimeout(this.infoTimer);
+    this.info.next(msg);
+    this.infoTimer = setTimeout(() => this.info.next(''), 1000);
+  }
 
   private prompts: { [pid: number]: EventEmitter<string> } = {};
 
@@ -34,25 +52,36 @@ export class PromptService {
   constructor(private zone: NgZone) {
   }
 
-  promptMayChanged(sessionInfo: SessionInfo) {
+  async promptMayChanged(sessionInfo: SessionInfo) {
     if (!sessionInfo) {
       return;
     }
-    const pid = sessionInfo.pid;
 
-    CWD.cwdMayChanged(pid);
-    CWD.getCwd(pid).then(cwd => this.emitPrompt(sessionInfo, cwd));
+    const change = async (thePid: number) => {
+      CWD.cwdMayChanged(thePid);
+      const procInfo = await CWD.getCwd(thePid);
+      this.emitPrompt(sessionInfo, procInfo);
+    };
+
+    const pid = await findPid(sessionInfo.pid);
+    change(pid);
+
+    setTimeout(async () => {
+      const newPid = await findPid(sessionInfo.pid);
+      if (newPid !== pid) {
+        change(newPid);
+      }
+    }, 1000);
   }
 
-  private formatPrompt(sessionInfo: SessionInfo, cwd: string): string {
-    // return `pid: ${sessionInfo.pid}, cwd: ${cwd}, t: ${Date.now()}`;
-    return `${cwd}`;
+  private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {
+    return `${procInfo.cwd} - ${path.basename(procInfo.title)}`;
   }
 
-  private emitPrompt(sessionInfo: SessionInfo, cwd: string) {
+  private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo) {
     const p = this.prompts[sessionInfo.pid];
     if (p) {
-      const prompt = this.formatPrompt(sessionInfo, cwd);
+      const prompt = this.formatPrompt(sessionInfo, procInfo);
       this.zone.run(() => p.next(prompt));
     }
   }

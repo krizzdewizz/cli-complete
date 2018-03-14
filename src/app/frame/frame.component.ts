@@ -63,7 +63,7 @@ export class FrameComponent implements OnInit, OnDestroy {
     });
 
     this.layout.registerComponent('clic-editor', (container, componentState) => {
-      const factory = this.componentFactoryResolver.resolveComponentFactory(EditorComponent);
+      const factory = this.componentFactoryResolver.resolveComponentFactory<EditorComponent>(EditorComponent);
 
       const compRef = this.viewContainer.createComponent(factory);
       container.getElement().append(compRef.location.nativeElement);
@@ -72,6 +72,9 @@ export class FrameComponent implements OnInit, OnDestroy {
       container[CLIC_ID] = id;
       container.getElement().attr(CLIC_ID, id);
       FrameComponent.nextId++;
+      compRef.instance.setTabTitle = title => {
+        return container.setTitle(title);
+      };
 
       compRef.changeDetectorRef.detectChanges();
     });
@@ -89,7 +92,6 @@ export class FrameComponent implements OnInit, OnDestroy {
   onCloseTerminal(el: HTMLElement) {
     const par = $(el).parents(`[${CLIC_ID}]`);
     const id = par.attr(CLIC_ID);
-    // const content: GoldenLayout.ContentItem;
     acceptLayout(this.layout.root, (it: any) => {
       if (it.componentName === 'clic-editor') {
         const containerId = it.container[CLIC_ID];
@@ -103,7 +105,9 @@ export class FrameComponent implements OnInit, OnDestroy {
   onNewTerminal() {
     const root = this.layout.root;
     const container = root.contentItems[0] || root;
-    container.addChild(EDITOR);
+    const child = container.addChild(EDITOR);
+    console.log('cccc', child);
+
   }
 
   ngOnDestroy() {

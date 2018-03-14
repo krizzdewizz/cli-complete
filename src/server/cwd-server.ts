@@ -1,10 +1,23 @@
 import * as path from 'path';
 import * as child_process from 'child_process';
 
-type Subscriber = (s?: string) => void;
+export interface ProcessInfo {
+    cwd?: string;
+    title?: string;
+}
 
-const SERVER = path.join(__dirname, 'getcwd/getcwd');
-// const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
+type Subscriber = (s?: ProcessInfo) => void;
+
+function parseResponse(s: string): ProcessInfo {
+    const all = s.split('?');
+    return {
+        cwd: all[0],
+        title: all[1]
+    };
+}
+
+// const SERVER = path.join(__dirname, 'getcwd/getcwd');
+const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
 
 export class CwdServer {
 
@@ -12,7 +25,7 @@ export class CwdServer {
 
     private srv: child_process.ChildProcess;
     private subscribers: Subscriber[] = [];
-    private cwds: { [pid: number]: string } = {};
+    private cwds: { [pid: number]: ProcessInfo } = {};
 
     onError: (err: Error) => void = () => undefined;
 
@@ -20,7 +33,7 @@ export class CwdServer {
         delete this.cwds[pid];
     }
 
-    async getCwd(pid: number): Promise<string> {
+    async getCwd(pid: number): Promise<ProcessInfo> {
         const cwd = this.cwds[pid];
         if (cwd) {
             return cwd;
@@ -56,7 +69,7 @@ export class CwdServer {
 
                     try {
                         if (s) {
-                            s(response);
+                            s(parseResponse(response));
                         } else {
                             console.warn(`no subscriber for response.`);
                         }
@@ -87,13 +100,13 @@ export class CwdServer {
 
     reqStart;
 
-    private async request(pid: number): Promise<string> {
+    private async request(pid: number): Promise<ProcessInfo> {
 
         if (!this.init()) {
-            return Promise.resolve('');
+            return Promise.resolve({});
         }
 
-        return new Promise<string>(s => {
+        return new Promise<ProcessInfo>(s => {
             this.subscribers.push(s);
             this.reqStart = Date.now();
             this.writeRequest(String(pid));

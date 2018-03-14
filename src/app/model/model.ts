@@ -8,7 +8,6 @@ export interface SessionConf {
 export interface SessionInfo {
     title: string;
     pid: number;
-    cwd: () => string;
     env: { [key: string]: string };
 }
 

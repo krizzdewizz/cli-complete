@@ -37,7 +37,6 @@ export class TermSession implements TerminalSession {
         this.sessionInfoSource.next({
             title: this.process.process,
             pid: this.process.pid,
-            cwd: () => process.cwd(),
             env: process.env
         });
     }

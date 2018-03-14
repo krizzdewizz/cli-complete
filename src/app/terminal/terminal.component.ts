@@ -6,6 +6,8 @@ import { TerminalService } from '@services/terminal.service';
 import { TerminalSession, SessionInfo } from '@model/model';
 import { Style } from '@style/style';
 import { PromptService } from '@services/prompt.service';
+import { autoAnswerYes } from './auto-answer-yes';
+import { FontSizeWheelService } from '@services/font-size-wheel.service';
 
 const { clipboard } = window.require('electron');
 
@@ -14,23 +16,29 @@ Terminal.applyAddon(winptyCompat);
 
 @Component({
   selector: 'clic-terminal',
-  templateUrl: './terminal.component.html',
+  template: '',
   styleUrls: ['./terminal.component.scss']
 })
 export class TerminalComponent implements OnInit, OnDestroy {
 
+  // cwd-server may be faster than send(), resulting in the wrong cwd -> determine cwd after first chunk arrives from terminal
   private awaitChunk: boolean;
   private _sessionInfo: SessionInfo;
   private term: Terminal;
   private session: TerminalSession;
 
-  private fontSize = Style.fontSize;
+  private style = { ...Style };
 
   @Output() focusNextGroup = new EventEmitter<void>();
   @Output() pasteFromClipboard = new EventEmitter<void>();
   @Output() sessionInfo = new EventEmitter<SessionInfo>();
 
-  constructor(private elRef: ElementRef, private termService: TerminalService, private zone: NgZone, private promptService: PromptService) {
+  constructor(
+    private elRef: ElementRef,
+    private termService: TerminalService,
+    private zone: NgZone,
+    private promptService: PromptService,
+    private fontSizeWheelService: FontSizeWheelService) {
   }
 
   @HostListener('mouseup', ['$event'])
@@ -48,25 +56,15 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   @HostListener('wheel', ['$event'])
   onWheel(e: MouseWheelEvent) {
-    if (!e.ctrlKey) {
-      return;
+    if (this.fontSizeWheelService.onWheel(this.style, e)) {
+      this.term.setOption('fontSize', this.style.fontSize);
+      this.fit();
     }
-
-    const increase = e.deltaY < 0;
-    if (increase) {
-      this.fontSize++;
-    } else if (this.fontSize > 6) {
-      this.fontSize--;
-    }
-    this.term.setOption('fontSize', this.fontSize);
-    this.fit();
   }
 
   ngOnInit() {
     const term = this.term = new Terminal({
-      fontFamily: Style.fontFamily,
-      fontSize: this.fontSize,
-      letterSpacing: Style.letterSpacing,
+      ...this.style,
       theme: {
         background: '#1e1e1e',
         foreground: '#dddddd'
@@ -108,9 +106,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
     }
     const session = this.session = this.termService.newSession({ shell: 'c:\\windows\\system32\\cmd.exe' });
     session.onData.subscribe(data => this.onData(data));
-    session.onExit.subscribe(() => {
-      this.zone.run(() => delete this.session);
-    });
+    session.onExit.subscribe(() => this.zone.run(() => delete this.session));
     session.onSessionInfo.subscribe(sessionInfo => {
       this._sessionInfo = sessionInfo;
       this.zone.run(() => this.sessionInfo.next(sessionInfo));
@@ -133,21 +129,11 @@ export class TerminalComponent implements OnInit, OnDestroy {
     this.term.write(data);
     this.term.scrollToBottom();
 
-    this.autoAnswerTerminateBatchJobMessage(data);
+    autoAnswerYes(data, yesKey => this.send(`${yesKey}\r`, false));
 
     if (this.awaitChunk) {
       this.awaitChunk = false;
       this.promptService.promptMayChanged(this._sessionInfo);
-    }
-  }
-
-  private autoAnswerTerminateBatchJobMessage(data: string) {
-    const msg = 'Terminate batch job (Y/N)?';
-    const pos = data.lastIndexOf('\n');
-    const lastLine = pos >= 0 ? data.substring(pos).trim() : data;
-
-    if (lastLine.includes(msg)) {
-      this.send('y\r', false);
     }
   }
 

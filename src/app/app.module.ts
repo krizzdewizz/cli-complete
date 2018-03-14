@@ -6,12 +6,15 @@ import { AppComponent } from './app.component';
 import { EditorComponent } from './editor/editor.component';
 import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { FrameComponent } from './frame/frame.component';
+import './rxjs';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { SessionService } from './services/session.service';
 import { TerminalComponent } from './terminal/terminal.component';
 import { TerminalService, RemoteService } from '@services/terminal.service';
 import { PromptComponent } from './prompt/prompt.component';
 import { PromptService } from '@services/prompt.service';
+import { FontSizeWheelService } from '@services/font-size-wheel.service';
+
 
 @NgModule({
   declarations: [
@@ -29,7 +32,9 @@ import { PromptService } from '@services/prompt.service';
   ],
   providers: [
     { provide: TerminalService, useClass: RemoteService },
-    SessionService, PromptService
+    SessionService,
+    PromptService,
+    FontSizeWheelService
   ],
   entryComponents: [EditorComponent],
   bootstrap: [AppComponent]

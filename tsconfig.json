@@ -16,6 +16,9 @@
       "@model/*": [
         "app/model/*"
       ],
+      "@util/*": [
+        "app/util/*"
+      ],
       "@style/*": [
         "app/style/*"
       ],

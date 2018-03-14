@@ -2,9 +2,25 @@
 
 #include "q.h"
 
+string trim(string s) {
+	auto str = s.c_str();
+	// Trim leading non-letters
+	while (!isalnum(*str)) str++;
+
+	// Trim trailing non-letters
+	auto end = str + strlen(str) - 1;
+	while (end > str && !isalnum(*end)) end--;
+
+	return string(str, end + 1);
+}
+
 int err(string msg) {
 	cout << "error:" << msg << endl;
 	return GetLastError();
+}
+
+void writeData(const string &cwd, const string &title) {
+	cout << trim(cwd) << "?" << trim(title) << endl;
 }
 
 void loop() {
@@ -18,11 +34,13 @@ void loop() {
 		auto pid = atoi(line.c_str());
 
 		string cwd;
-		auto error = getCwd(pid, cwd);
+		string title;
+		auto error = getCwd(pid, cwd, title);
 
 		if (error.empty()) {
-			cout << cwd;
-		} else {
+			writeData(cwd, title);
+		}
+		else {
 			err(error);
 		}
 	}
@@ -37,10 +55,11 @@ int main(int argc, char *argv[]) {
 	auto pid = atoi(argv[1]);
 
 	string cwd;
-	auto error = getCwd(pid, cwd);
+	string title;
+	auto error = getCwd(pid, cwd, title);
 
 	if (error.empty()) {
-		cout << cwd;
+		writeData(cwd, title);
 		return 0;
 	}
 
