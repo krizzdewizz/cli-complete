@@ -9,10 +9,14 @@ export interface ProcessInfo {
 
 type Subscriber = (s?: ProcessInfo) => void;
 
+function formatCwd(cwd: string) {
+    return cwd.length === 1 ? `${cwd}:\\` : cwd; // windows. If at root, cwd-server says: 'C' or 'D' drive
+}
+
 function parseResponse(s: string): ProcessInfo {
     const all = s.split('?');
     return {
-        cwd: all[0],
+        cwd: formatCwd(all[0]),
         title: all[1],
         commandLine: all[2]
     };

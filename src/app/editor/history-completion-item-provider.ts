@@ -1,4 +1,5 @@
 import { EditorHistory } from './history';
+import { CompletionItemProviderOrder } from './completion-item-provider';
 
 export class HistoryCompletionItemProvider implements monaco.languages.CompletionItemProvider {
 
@@ -9,6 +10,8 @@ export class HistoryCompletionItemProvider implements monaco.languages.Completio
 
     provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken): monaco.languages.CompletionItem[] | monaco.Thenable<monaco.languages.CompletionItem[]> | monaco.languages.CompletionList | monaco.Thenable<monaco.languages.CompletionList> {
 
+        console.log('provide history');
+
         const set = {};
         this.history.list.forEach(it => {
             set[it] = true;
@@ -17,6 +20,7 @@ export class HistoryCompletionItemProvider implements monaco.languages.Completio
         return Object.keys(set).map(it => ({
             label: it,
             kind: monaco.languages.CompletionItemKind.Text,
+            sortText: CompletionItemProviderOrder.HISTORY,
             detail: 'History'
         }));
     }

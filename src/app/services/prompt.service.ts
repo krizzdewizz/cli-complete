@@ -22,10 +22,6 @@ function formatTitle(title: string) {
   return path.basename(title);
 }
 
-function formatCwd(cwd: string) {
-  return cwd.length === 1 ? `${cwd}:\\` : cwd; // windows
-}
-
 @Injectable()
 export class PromptService {
   info = new EventEmitter<string>();
@@ -90,7 +86,7 @@ export class PromptService {
   }
 
   private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {
-    return `${formatCwd(procInfo.cwd)} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
+    return `${procInfo.cwd} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
   }
 
   private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo) {

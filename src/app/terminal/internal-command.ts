@@ -1,3 +1,4 @@
+import { parsePathPrefix, explodeRelPath } from '@util/util';
 
 export function mapInternalCommand(cmd: string): string {
     const cdd = 'cdd ';
@@ -14,6 +15,11 @@ export function mapInternalCommand(cmd: string): string {
     if (cmd.startsWith(mcd)) {
         const path = cmd.substring(mcd.length).trim();
         return `md ${path}&cd ${path}\r`;
+    }
+
+    // autocd
+    if (cmd.trimRight().endsWith('\\') && !parsePathPrefix(cmd).hadSpace) {
+        cmd = `cd ${explodeRelPath(cmd)}\r`;
     }
 
     return cmd;

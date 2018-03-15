@@ -32,6 +32,14 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         }),
 
         ed.addAction({
+            id: 'triggy',
+            label: 'Trigger Suggest',
+            keybindings: [monaco.KeyCode.Tab],
+            run: () => editor.selectSuggestionAndReopen(),
+            keybindingContext: 'editorTextFocus',
+        }),
+
+        ed.addAction({
             id: 'send-break',
             label: 'Send Break Signal',
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],

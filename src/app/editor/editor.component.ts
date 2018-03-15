@@ -12,6 +12,7 @@ import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { appEvent } from '@services/app-event';
 import { EditorHistory } from './history';
 import { HistoryCompletionItemProvider } from './history-completion-item-provider';
+import { DirCompletionItemProvider } from './dir-completion-item-provider';
 
 @Component({
   selector: 'clic-editor',
@@ -24,6 +25,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private subscriptions: ISubscription[] = [];
   private sessionInfo: SessionInfo;
   private style = { ...Style };
+  private dirCompletionItemProvider = new DirCompletionItemProvider();
   history = new EditorHistory();
 
   prompt = '';
@@ -39,7 +41,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     lineNumbers: 'off',
     minimap: { enabled: false },
     mouseWheelZoom: true,
-    acceptSuggestionOnEnter: 'off'
+    acceptSuggestionOnEnter: 'off',
+    suggestOnTriggerCharacters: true,
+    acceptSuggestionOnCommitCharacter: true,
     // language: 'javascript',
   };
   // code = '';
@@ -60,30 +64,54 @@ forever`;
     return this.editorCmp._editor;
   }
 
-  selectSuggestion() {
-    const ed = this.editor as any;
-    const suggestWidget = ed.contentWidgets['editor.widget.suggestWidget'].widget;
+  private get suggestWidget() {
+    return (this.editor as any).contentWidgets['editor.widget.suggestWidget'].widget;
+  }
+
+  selectSuggestionAndReopen() {
+    const suggestVisible = this.suggestWidget.suggestWidgetVisible.get();
+    if (suggestVisible) {
+      this.selectSuggestion(false);
+    }
+    this.editor.getAction('editor.action.triggerSuggest').run();
+  }
+
+  selectSuggestion(focusAndSend = true) {
+    const suggestWidget = this.suggestWidget;
     const item = suggestWidget.getFocusedItem();
     suggestWidget.onDidSelectEmitter.fire(item);
-    this.editor.focus();
-    this.send();
+    if (focusAndSend) {
+      this.editor.focus();
+      this.send();
+    }
   }
 
   ngAfterViewInit() {
 
     this.subscriptions.push(
-      appEvent.layout.subscribe(() => this.editor.layout()),
       this.history.select.subscribe(item => this.selectHistory(item))
     );
 
     waitForMonaco().then(() => {
+      this.subscriptions.push(
+        appEvent.layout.subscribe(() => this.editor.layout()),
+      );
+
       if (!this.editorCmp._editor) {
         this.editorCmp.initMonaco(this.editorCmp.options);
       }
 
       const ed = this.editor;
 
+      ed.onDidChangeModelContent(e => {
+        const change = e.changes[0];
+        if (change.text === '\\') {
+          ed.getAction('editor.action.triggerSuggest').run();
+        }
+      });
+
       monaco.languages.registerCompletionItemProvider('*', new HistoryCompletionItemProvider(this.history));
+      monaco.languages.registerCompletionItemProvider('*', this.dirCompletionItemProvider);
 
       ed.getDomNode().addEventListener('wheel', e => {
         if (this.fontSizeWheelService.onWheel(this.style, e)) {
@@ -182,6 +210,7 @@ forever`;
 
   onSessionInfo(sessionInfo: SessionInfo) {
     this.sessionInfo = sessionInfo;
+    this.dirCompletionItemProvider.pid = sessionInfo.pid;
     this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
       this.prompt = prompt;
       this.setTabTitle(prompt || 'clic');

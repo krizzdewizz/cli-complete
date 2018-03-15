@@ -53,3 +53,57 @@ export function accept<R, T extends Node>(node: T, visitor: (node: T) => R): R {
         }
     }
 }
+
+export function parsePathPrefix(line: string): { prefix: string, hadSpace?: boolean } {
+    let inQuote: boolean;
+    let prefix = '';
+    for (let i = line.length - 1; i >= 0; i--) {
+        const c = line[i];
+        if (c === '"') {
+            inQuote = !inQuote;
+            continue;
+        }
+
+        if (c === ' ' && !inQuote) {
+            return { prefix, hadSpace: true };
+        }
+        prefix = c + prefix;
+    }
+    return { prefix };
+}
+
+export function explodeRelPath(s: string, exploded = [false]): string {
+    // .\ -> .\
+    // ..\ -> ..\
+    // ...\ -> ..\..\
+    // ....\ -> ..\..\..\
+
+    if (s[0] !== '.') {
+        return s;
+    }
+
+    const pos = s.indexOf('\\');
+    if (pos < 0) {
+        return s;
+    }
+
+    const left = s.substring(0, pos);
+    if (left.length < 3) {
+        return s;
+    }
+
+    for (const c of left) {
+        if (c !== '.') {
+            return s;
+        }
+    }
+
+    exploded[0] = true;
+
+    // only dots
+    let exp = '';
+    for (let i = left.length; i >= 2; i--) {
+        exp = `${exp}..\\`;
+    }
+    return exp;
+}
