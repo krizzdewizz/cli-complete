@@ -17,6 +17,12 @@ const createWindow = () => {
         slashes: true
     }));
 
+    const dev = process.argv.indexOf('-dev') >= 0
+
+    if (dev) {
+        win.webContents.openDevTools();
+    }
+
     win.on('closed', () => {
         win = null;
     });
