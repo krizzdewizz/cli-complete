@@ -1,28 +1,25 @@
+//@ts-check
 const { app, BrowserWindow } = require('electron');
-const path = require('path');
 const url = require('url');
-
+const config = require('./config');
 let win;
 
 function createWindow() {
   win = new BrowserWindow({
     width: 1280,
     height: 864,
-    icon: './src/favicon.ico'
+    icon: config.icon
   });
 
-  // and load the app.
-  win.loadURL(url.format({
-    pathname: 'localhost:4200',
-    protocol: 'http:',
-    slashes: true
-  }));
+  win.loadURL(url.format(config.url));
 
-  win.webContents.openDevTools();
+  const dev = config.dev || process.argv.indexOf('-dev') >= 0
 
-  win.on('closed', () => {
-    win = null;
-  });
+  if (dev) {
+    win.webContents.openDevTools();
+  }
+
+  win.on('closed', () => win = null);
 }
 
 app.on('ready', createWindow);

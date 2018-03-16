@@ -26,18 +26,8 @@
   </script>
 
   <script>
-    // require node modules before loader.js comes in
-    var path = require('path');
-
-    function uriFromPath(_path) {
-      var pathName = path.resolve(_path).replace(/\\/g, '/');
-      if (pathName.length > 0 && pathName.charAt(0) !== '/') {
-        pathName = '/' + pathName;
-      }
-      return encodeURI('file://' + pathName);
-    }
-
-    amdRequire.config({ paths: { 'vs': path.join(__dirname, "/assets/monaco/vs") } });
+    var __MONACO_PATH = '';
+    amdRequire.config({ paths: { 'vs': __MONACO_PATH + "assets/monaco/vs" } });
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;
