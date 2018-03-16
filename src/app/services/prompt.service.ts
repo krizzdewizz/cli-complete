@@ -86,7 +86,13 @@ export class PromptService {
   }
 
   private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {
-    return `${procInfo.cwd} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
+    // return `${procInfo.cwd} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
+    return [
+      procInfo.cwd,
+      formatTitle(procInfo.title)
+    ]
+      .filter(Boolean)
+      .join(' - ');
   }
 
   private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo) {
