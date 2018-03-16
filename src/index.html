@@ -17,7 +17,7 @@
     var nodeRequire = global.require;
   </script>
 
-  <script src="/assets/monaco/vs/loader.js"></script>
+  <script src="assets/monaco/vs/loader.js"></script>
 
   <script>
     // Save Monaco's amd require and restore Node's require
@@ -37,7 +37,7 @@
       return encodeURI('file://' + pathName);
     }
 
-    amdRequire.config({ paths: { 'vs': "assets/monaco/vs" } });
+    amdRequire.config({ paths: { 'vs': path.join(__dirname, "/assets/monaco/vs") } });
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;

@@ -1,5 +1,4 @@
 import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
-import { SessionService } from '@services/session.service';
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style } from '@style/style';
 import { PromptService } from '@services/prompt.service';
@@ -7,7 +6,6 @@ import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
 import { handleCtrlC } from './ctrl-c';
 import { createEditorActions } from './editor-action';
-import { waitForMonaco } from './monaco-ready';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { appEvent } from '@services/app-event';
 import { EditorHistory } from './history';
@@ -40,10 +38,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     theme: 'vs-dark',
     lineNumbers: 'off',
     minimap: { enabled: false },
-    mouseWheelZoom: true,
     acceptSuggestionOnEnter: 'off',
-    suggestOnTriggerCharacters: true,
-    acceptSuggestionOnCommitCharacter: true,
+    // suggestOnTriggerCharacters: true,
+    // acceptSuggestionOnCommitCharacter: true,
     // language: 'javascript',
   };
   // code = '';
@@ -55,7 +52,6 @@ forever`;
 
   constructor(
     public elRef: ElementRef,
-    private sessionService: SessionService,
     private promptService: PromptService,
     private fontSizeWheelService: FontSizeWheelService) {
   }
@@ -92,42 +88,40 @@ forever`;
       this.history.select.subscribe(item => this.selectHistory(item))
     );
 
-    waitForMonaco().then(() => {
-      this.subscriptions.push(
-        appEvent.layout.subscribe(() => this.editor.layout()),
-      );
+    this.subscriptions.push(
+      appEvent.layout.subscribe(() => this.editor.layout()),
+    );
 
-      if (!this.editorCmp._editor) {
-        this.editorCmp.initMonaco(this.editorCmp.options);
+    if (!this.editorCmp._editor) {
+      this.editorCmp.initMonaco(this.editorCmp.options);
+    }
+
+    const ed = this.editor;
+
+    ed.onDidChangeModelContent(e => {
+      const change = e.changes[0];
+      if (change.text === '\\') {
+        ed.getAction('editor.action.triggerSuggest').run();
       }
-
-      const ed = this.editor;
-
-      ed.onDidChangeModelContent(e => {
-        const change = e.changes[0];
-        if (change.text === '\\') {
-          ed.getAction('editor.action.triggerSuggest').run();
-        }
-      });
-
-      monaco.languages.registerCompletionItemProvider('*', new HistoryCompletionItemProvider(this.history));
-      monaco.languages.registerCompletionItemProvider('*', this.dirCompletionItemProvider);
-
-      ed.getDomNode().addEventListener('wheel', e => {
-        if (this.fontSizeWheelService.onWheel(this.style, e)) {
-          ed.updateOptions({ fontSize: this.style.fontSize });
-        }
-      });
-
-      const line = ed.getSelection().startLineNumber;
-      const maxCol = ed.getModel().getLineMaxColumn(line);
-      ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
-
-      ed.layout();
-      ed.focus();
-
-      this.toDispose = createEditorActions(this);
     });
+
+    monaco.languages.registerCompletionItemProvider('*', new HistoryCompletionItemProvider(this.history));
+    monaco.languages.registerCompletionItemProvider('*', this.dirCompletionItemProvider);
+
+    ed.getDomNode().addEventListener('wheel', e => {
+      if (this.fontSizeWheelService.onWheel(this.style, e)) {
+        ed.updateOptions({ fontSize: this.style.fontSize });
+      }
+    });
+
+    const line = ed.getSelection().startLineNumber;
+    const maxCol = ed.getModel().getLineMaxColumn(line);
+    ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
+
+    ed.layout();
+    ed.focus();
+
+    this.toDispose = createEditorActions(this);
   }
 
   ctrlC() {
@@ -216,5 +210,8 @@ forever`;
       this.setTabTitle(prompt || 'clic');
     }));
     this.promptService.promptMayChanged(sessionInfo);
+  }
+
+  pasteFromClipboard() {
   }
 }

@@ -73,7 +73,7 @@ export async function getCompletions(pid: number, line: string, offset: number, 
         }
 
         const kind = isDir ? monaco.languages.CompletionItemKind.Folder : monaco.languages.CompletionItemKind.File;
-        const include = wantsFolder && kind === monaco.languages.CompletionItemKind.Folder || wantsFile && kind === monaco.languages.CompletionItemKind.File;
+        const include = wantsFolder && isDir || wantsFile && !isDir;
         if (include) {
             all.push({
                 label: file,

@@ -22,8 +22,8 @@ function parseResponse(s: string): ProcessInfo {
     };
 }
 
-// const SERVER = path.join(__dirname, 'getcwd/getcwd');
-const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
+const SERVER = path.join(__dirname, 'getcwd/getcwd');
+// const SERVER = path.join(__dirname, 'getcwd/x64/Release/getcwd');
 
 export class CwdServer {
 

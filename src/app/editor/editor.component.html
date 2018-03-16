@@ -1,6 +1,6 @@
 <ngx-monaco-editor #editor [options]="editorOptions" [(ngModel)]="code"></ngx-monaco-editor>
 <clic-prompt [prompt]="prompt"></clic-prompt>
-<clic-terminal (sessionInfo)="onSessionInfo($event)" [style.display]="hasSession ? null : 'none'" #terminal (sessionExit)="sessionExit()"
-    (focusNextGroup)="focusEditor()" (pasteFromClipboard)="pasteFromClipboard()"></clic-terminal>
+<clic-terminal (sessionInfo)="onSessionInfo($event)" [style.display]="hasSession ? null : 'none'" #terminal (focusNextGroup)="focusEditor()"
+    (pasteFromClipboard)="pasteFromClipboard()"></clic-terminal>
 <span [style.display]="hasSession ? 'none' : null" class="restart">Terminal session has exited. Press [Enter] to restart.
 </span>

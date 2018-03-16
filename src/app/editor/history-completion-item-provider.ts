@@ -10,12 +10,8 @@ export class HistoryCompletionItemProvider implements monaco.languages.Completio
 
     provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken): monaco.languages.CompletionItem[] | monaco.Thenable<monaco.languages.CompletionItem[]> | monaco.languages.CompletionList | monaco.Thenable<monaco.languages.CompletionList> {
 
-        console.log('provide history');
-
         const set = {};
-        this.history.list.forEach(it => {
-            set[it] = true;
-        });
+        this.history.list.forEach(it => set[it] = true);
 
         return Object.keys(set).map(it => ({
             label: it,

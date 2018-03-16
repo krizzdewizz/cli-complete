@@ -25,7 +25,7 @@ export function findDescendant<T extends Node>(node: T, filter: (node: T) => boo
 }
 
 export function acceptParents<R, T extends Node>(node: T, visitor: (node: T) => R): R {
-    let result;
+    let result: R;
     let it = node;
     while (it) {
         if (result = visitor(it)) {
@@ -40,7 +40,7 @@ export function accept<R, T extends Node>(node: T, visitor: (node: T) => R): R {
     if (!node) {
         return;
     }
-    let result;
+    let result: R;
     if (result = visitor(node)) {
         return result;
     }

@@ -1,15 +1,21 @@
-const DELAY = 300;
+const DELAY = 200;
 
-export async function waitForMonaco() {
-    const check = () => {
-        if ((window as any).monaco) {
-            return true;
-        } else {
-            console.log('ttttttttttttttttttttttt');
+export function waitForMonaco() {
+    return new Promise((resolve, reject) => {
+        let tries = 20;
 
-            setTimeout(check, DELAY);
-        }
-    };
+        const check = () => {
+            if ((window as any).monaco) {
+                resolve();
+            } else if (tries > 0) {
+                tries--;
+                setTimeout(check, DELAY);
+            } else {
+                reject('waitForMonaco timed out.');
+            }
+        };
 
-    setTimeout(check, DELAY);
+        setTimeout(check, DELAY);
+    });
+
 }

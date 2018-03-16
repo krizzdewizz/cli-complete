@@ -1,6 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, ComponentRef } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
-import { SessionService } from '@services/session.service';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
 import { QEditorComponent } from '../q-editor/q-editor.component';
@@ -42,8 +41,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   constructor(
     private el: ElementRef,
     private viewContainer: ViewContainerRef,
-    private componentFactoryResolver: ComponentFactoryResolver,
-    private sessionService: SessionService
+    private componentFactoryResolver: ComponentFactoryResolver
   ) {
     this.config = {
       content: [{
