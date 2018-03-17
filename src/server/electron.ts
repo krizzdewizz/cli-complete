@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import * as url from 'url';
 import { config } from './config';
+import { registerGlobalActions } from './global-action';
 
 let win;
 
@@ -20,6 +21,8 @@ function createWindow() {
   }
 
   win.on('closed', () => win = null);
+
+  registerGlobalActions();
 }
 
 app.on('ready', createWindow);

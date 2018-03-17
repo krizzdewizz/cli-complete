@@ -3,6 +3,10 @@ import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
 import { QEditorComponent } from '../q-editor/q-editor.component';
+import { findAncestor, accept } from '@util/util';
+
+const { remote } = window.require('electron');
+const { setGlobalActionCallback } = remote.require('./global-action');
 
 const EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
@@ -16,12 +20,8 @@ const Q_EDITOR: GoldenLayout.ComponentConfig = {
 
 const CLIC_ID = 'clicid';
 
-function acceptLayout(item: GoldenLayout.ContentItem, visitor: (it: GoldenLayout.ContentItem) => void) {
-  visitor(item);
-  const children = item.contentItems;
-  if (children) {
-    children.forEach(child => acceptLayout(child, visitor));
-  }
+function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
+  return (it as any).container.compRef.instance;
 }
 
 @Component({
@@ -61,6 +61,8 @@ export class FrameComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.layout = new GoldenLayout(this.config, this.layoutContainer.nativeElement);
 
+    setGlobalActionCallback(it => this.handleGlobalAction(it));
+
     this.layout.on('itemDestroyed', ({ container }) => {
       if (container) {
         const compRef = container.compRef;
@@ -82,25 +84,56 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     this.subscriptions = [
       appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
-      appEvent.closeTerminal.subscribe(el => this.onCloseTerminal(el)),
     ];
 
     this.layout.init();
 
     window.addEventListener('resize', () => this.layout.updateSize());
   }
-  private getClicId(el: HTMLElement) {
-    return $(el).parents(`[${CLIC_ID}]`).attr(CLIC_ID);
+
+  onCloseTerminal() {
+    let prevItem: GoldenLayout.ContentItem;
+    const found = accept(this.layout.root, (it: any) => {
+      if (it.componentName === 'clic-editor') {
+        if (getContentItemEditor(it).isFocused) {
+          it.remove();
+          return true;
+        }
+        prevItem = it;
+      }
+    });
+
+    if (found && prevItem) {
+      getContentItemEditor(prevItem).focus();
+    }
   }
 
-  onCloseTerminal(el: HTMLElement) {
-    const id = this.getClicId(el);
-    acceptLayout(this.layout.root, (it: any) => {
+  private handleGlobalAction(id: string) {
+    this.handleTabSelect(id);
+
+    switch (id) {
+      case 'close-terminal':
+        return this.onCloseTerminal();
+      case 'new-terminal':
+        return this.onNewTerminal();
+    }
+  }
+
+  private handleTabSelect(id: string) {
+    if (!id.startsWith('select-tab-')) {
+      return;
+    }
+
+    const num = Number(id.split('-')[2]);
+    let index = 1;
+    accept(this.layout.root, (it: any) => {
       if (it.componentName === 'clic-editor') {
-        const containerId = it.container[CLIC_ID];
-        if (containerId === id) {
-          it.remove();
+        if (index === num) {
+          const stack = findAncestor(it, anc => anc.type === 'stack');
+          stack.setActiveContentItem(it);
+          getContentItemEditor(it).focus();
         }
+        index++;
       }
     });
   }

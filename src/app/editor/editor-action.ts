@@ -54,20 +54,6 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         }),
 
         ed.addAction({
-            id: 'new-terminal',
-            label: 'New Terminal',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_T, undefined)],
-            run: () => appEvent.newTerminal.next()
-        }),
-
-        ed.addAction({
-            id: 'close-terminal',
-            label: 'Close Terminal',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_W, undefined)],
-            run: () => appEvent.closeTerminal.next(editor.elRef.nativeElement)
-        }),
-
-        ed.addAction({
             id: 'history-next',
             label: 'History Next',
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.RightArrow, undefined)],

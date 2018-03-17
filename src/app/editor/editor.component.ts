@@ -179,8 +179,12 @@ forever`;
     this.subscriptions.forEach(it => it.unsubscribe());
   }
 
-  focusEditor() {
+  focus() {
     this.editor.focus();
+  }
+
+  get isFocused(): boolean {
+    return this.editor.isFocused();
   }
 
   get hasSession() {
