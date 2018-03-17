@@ -5,6 +5,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "format-json": "^1.0.3",
     "node-pty-prebuilt": "^0.7.3",
     "rxjs": "^5.5.6"
   }

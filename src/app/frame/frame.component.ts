@@ -3,7 +3,7 @@ import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
 import { findAncestor, accept } from '@util/util';
-import { FrameService, newEditor, getContentItemEditor } from './frame.service';
+import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT } from './frame.service';
 
 const { remote } = window.require('electron');
 const { setGlobalActionCallback } = remote.require('./global-action');
@@ -32,9 +32,26 @@ export class FrameComponent implements OnInit, OnDestroy {
   ) {
   }
 
+  private createAndRegister(layout: GoldenLayout.Config) {
+    this.layout = new GoldenLayout(layout, this.layoutContainer.nativeElement);
+    this.layout.registerComponent('clic-editor', container => {
+      const compRef = this.createComponent<EditorComponent>(container, EditorComponent);
+      compRef.instance.setTabTitle = title => container.setTitle(title);
+    });
+  }
+
   ngOnInit() {
     const settings = this.frameService.loadSettings();
-    this.layout = new GoldenLayout(settings.layout, this.layoutContainer.nativeElement);
+    this.createAndRegister(settings.layout);
+
+    try {
+      this.layout.init();
+    } catch (err) {
+      console.log(`error while initializing layout: ${err}. Starting fresh.`);
+      this.layout.destroy();
+      this.createAndRegister(DEFAULT_LAYOUT);
+      this.layout.init();
+    }
 
     setGlobalActionCallback(it => this.handleGlobalAction(it));
 
@@ -61,11 +78,6 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     this.layout.on('initialised', () => this.frameService.loadEditorContent(this.layout));
 
-    this.layout.registerComponent('clic-editor', container => {
-      const compRef = this.createComponent<EditorComponent>(container, EditorComponent);
-      compRef.instance.setTabTitle = title => container.setTitle(title);
-    });
-
     // this.layout.registerComponent('q-editor', (container, state) => this.createComponent<QEditorComponent>(container, QEditorComponent));
 
     this.subscriptions = [
@@ -73,8 +85,6 @@ export class FrameComponent implements OnInit, OnDestroy {
       appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
     ];
-
-    this.layout.init();
 
     window.addEventListener('resize', () => this.layout.updateSize());
   }

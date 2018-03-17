@@ -42,7 +42,7 @@ function homeFile(): string {
 }
 
 const DEFAULT_EDITOR = newEditor();
-const DEFAULT_LAYOUT = {
+export const DEFAULT_LAYOUT: GoldenLayout.Config = {
   content: [{
     type: 'stack',
     content: [
@@ -55,7 +55,7 @@ const DEFAULT_LAYOUT = {
   }
 };
 
-const DEFAULT_SETTINGS = {
+export const DEFAULT_SETTINGS = {
   editors: { [DEFAULT_EDITOR.componentState.clicId]: { content: '' } },
   layout: DEFAULT_LAYOUT
 };

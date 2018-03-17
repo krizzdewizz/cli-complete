@@ -1,6 +1,6 @@
 <div #editorElement class="monaco-editor"></div>
 <clic-prompt [prompt]="prompt"></clic-prompt>
-<clic-terminal (sessionInfo)="onSessionInfo($event)" [style.display]="hasSession ? null : 'none'" #terminal (focusNextGroup)="focusEditor()"
+<clic-terminal (sessionInfo)="onSessionInfo($event)" [style.display]="hasSession ? null : 'none'" #terminal (focusNextGroup)="focus()"
     (pasteFromClipboard)="pasteFromClipboard()"></clic-terminal>
 <span [style.display]="hasSession ? 'none' : null" class="restart">Terminal session has exited. Press [Enter] to restart.
 </span>
