@@ -14,6 +14,7 @@ import { PromptService } from '@services/prompt.service';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { QEditorComponent } from './q-editor/q-editor.component';
 import { waitForMonaco } from './editor/monaco-ready';
+import { FrameService } from './frame/frame.service';
 
 export function waitForMonacoFactory() {
   return () => waitForMonaco();
@@ -37,7 +38,8 @@ export function waitForMonacoFactory() {
     { provide: TerminalService, useClass: RemoteService },
     { provide: APP_INITIALIZER, multi: true, useFactory: waitForMonacoFactory },
     PromptService,
-    FontSizeWheelService
+    FontSizeWheelService,
+    FrameService
   ],
   entryComponents: [EditorComponent, QEditorComponent],
   bootstrap: [AppComponent]

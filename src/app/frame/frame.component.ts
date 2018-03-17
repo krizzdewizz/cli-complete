@@ -2,27 +2,16 @@ import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFa
 import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
-import { QEditorComponent } from '../q-editor/q-editor.component';
 import { findAncestor, accept } from '@util/util';
+import { FrameService, newEditor, getContentItemEditor } from './frame.service';
 
 const { remote } = window.require('electron');
 const { setGlobalActionCallback } = remote.require('./global-action');
-
-const EDITOR: GoldenLayout.ComponentConfig = {
-  type: 'component',
-  componentName: 'clic-editor',
-};
 
 const Q_EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
   componentName: 'q-editor',
 };
-
-const CLIC_ID = 'clicid';
-
-function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
-  return (it as any).container.compRef.instance;
-}
 
 @Component({
   selector: 'clic-frame',
@@ -30,36 +19,22 @@ function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
   styleUrls: ['./frame.component.scss']
 })
 export class FrameComponent implements OnInit, OnDestroy {
-  private config: GoldenLayout.Config;
   private layout: GoldenLayoutX;
   private subscriptions: Subscription[];
-
-  private static nextId = 0;
 
   @ViewChild('layoutContainer') layoutContainer: ElementRef;
 
   constructor(
     private el: ElementRef,
     private viewContainer: ViewContainerRef,
-    private componentFactoryResolver: ComponentFactoryResolver
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private frameService: FrameService
   ) {
-    this.config = {
-      content: [{
-        type: 'stack',
-        content: [
-          EDITOR
-        ]
-      }],
-      labels: {
-        close: 'Close',
-        maximise: 'Maximize',
-        minimise: 'Minimize',
-      }
-    };
   }
 
   ngOnInit() {
-    this.layout = new GoldenLayout(this.config, this.layoutContainer.nativeElement);
+    const settings = this.frameService.loadSettings();
+    this.layout = new GoldenLayout(settings.layout, this.layoutContainer.nativeElement);
 
     setGlobalActionCallback(it => this.handleGlobalAction(it));
 
@@ -73,17 +48,30 @@ export class FrameComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.layout.on('stateChanged', () => appEvent.layout.next());
+    let firstLayout = true;
+    this.layout.on('stateChanged', e => {
+      appEvent.layout.next();
+
+      if (firstLayout) {
+        firstLayout = false;
+      } else {
+        appEvent.saveLayoutAuto.next();
+      }
+    });
+
+    this.layout.on('initialised', () => this.frameService.loadEditorContent(this.layout));
 
     this.layout.registerComponent('clic-editor', container => {
       const compRef = this.createComponent<EditorComponent>(container, EditorComponent);
       compRef.instance.setTabTitle = title => container.setTitle(title);
     });
 
-    this.layout.registerComponent('q-editor', container => this.createComponent<QEditorComponent>(container, QEditorComponent));
+    // this.layout.registerComponent('q-editor', (container, state) => this.createComponent<QEditorComponent>(container, QEditorComponent));
 
     this.subscriptions = [
       appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
+      appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
+      appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
     ];
 
     this.layout.init();
@@ -141,7 +129,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   onNewTerminal() {
     const root = this.layout.root;
     const container = root.contentItems[0] || root;
-    container.addChild(EDITOR);
+    container.addChild(newEditor());
   }
 
   ngOnDestroy() {
@@ -153,10 +141,6 @@ export class FrameComponent implements OnInit, OnDestroy {
     const compRef = this.viewContainer.createComponent(factory);
     container.getElement().append(compRef.location.nativeElement);
     container.compRef = compRef;
-    const id = `ed${FrameComponent.nextId}`;
-    container[CLIC_ID] = id;
-    container.getElement().attr(CLIC_ID, id);
-    FrameComponent.nextId++;
     compRef.changeDetectorRef.detectChanges();
     return compRef;
   }

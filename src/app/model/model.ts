@@ -20,3 +20,12 @@ export interface TerminalSession {
     resize(cols: number, rows: number);
     destroy();
 }
+
+export interface EditorSettings {
+    content: string;
+}
+
+export interface Settings {
+    layout: any; // GoldenLayout config
+    editors: { [id: string]: EditorSettings; };
+};

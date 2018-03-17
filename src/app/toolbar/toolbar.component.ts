@@ -16,4 +16,8 @@ export class ToolbarComponent implements OnInit {
   onNewSession() {
     appEvent.newTerminal.next();
   }
+
+  onSaveLayout() {
+    appEvent.saveLayout.next();
+  }
 }

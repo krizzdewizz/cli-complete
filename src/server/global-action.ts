@@ -14,6 +14,11 @@ const GLOBAL_ACTIONS = [
         accelerator: `CmdOrCtrl+T`,
     },
     {
+        id: 'new-terminal',
+        label: 'New Terminal',
+        accelerator: `CmdOrCtrl+N`,
+    },
+    {
         id: 'close-terminal',
         label: 'Close Terminal',
         accelerator: `CmdOrCtrl+W`,

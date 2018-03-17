@@ -44,12 +44,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     // acceptSuggestionOnCommitCharacter: true,
     // language: 'javascript',
   };
-  // code = '';
-  // code = String(new Date(Date.now()) + '\n\n');
-  code = `echo off & prompt $s
-dir
-cls
-forever`;
 
   constructor(
     public elRef: ElementRef,
@@ -91,9 +85,13 @@ forever`;
 
     const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.editorOptions);
 
-    ed.setValue(this.code);
+    //     this.content = `echo off & prompt $s
+    // dir
+    // cls
+    // forever`;
 
     ed.onDidChangeModelContent(e => {
+      appEvent.saveLayoutAuto.next();
       const change = e.changes[0];
       if (change.text === '\\') {
         ed.getAction('editor.action.triggerSuggest').run();
@@ -212,5 +210,13 @@ forever`;
   }
 
   pasteFromClipboard() {
+  }
+
+  get content(): string {
+    return this.editor.getValue();
+  }
+
+  set content(value: string) {
+    this.editor.setValue(value);
   }
 }

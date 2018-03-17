@@ -42,6 +42,7 @@
     "@angular/router": "^5.2.0",
     "core-js": "^2.4.1",
     "electron": "1.7.11",
+    "format-json": "^1.0.3",
     "golden-layout": "1.5.9",
     "jquery": "3.3.1",
     "monaco-editor": "^0.10.1",
