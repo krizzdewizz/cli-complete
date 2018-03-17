@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { EditorComponent } from './editor/editor.component';
-import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { FrameComponent } from './frame/frame.component';
 import './rxjs';
 import { ToolbarComponent } from './toolbar/toolbar.component';
@@ -32,8 +31,7 @@ export function waitForMonacoFactory() {
   ],
   imports: [
     BrowserModule,
-    FormsModule,
-    MonacoEditorModule.forRoot()
+    FormsModule
   ],
   providers: [
     { provide: TerminalService, useClass: RemoteService },

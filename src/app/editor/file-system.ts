@@ -1,6 +1,6 @@
 const { remote } = window.require('electron');
 import { ProcessInfo } from '@server/cwd-server';
-const { CwdServer } = remote.require('./server/cwd-server');
+const { CwdServer } = remote.require('./cwd-server');
 const fs = remote.require('fs');
 const path = remote.require('path');
 

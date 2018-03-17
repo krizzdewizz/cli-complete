@@ -5,8 +5,8 @@ import { SessionInfo } from '@model/model';
 import { accept } from '@util/util';
 
 const { remote } = window.require('electron');
-const { CwdServer: _CwdServer } = remote.require('./server/cwd-server');
-const { processTree } = remote.require('./server/process-tree');
+const { CwdServer: _CwdServer } = remote.require('./cwd-server');
+const { processTree } = remote.require('./process-tree');
 const path = remote.require('path');
 
 async function findPid(rootPid: number) {

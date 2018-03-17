@@ -1,7 +1,7 @@
-//@ts-check
-const { app, BrowserWindow } = require('electron');
-const url = require('url');
-const config = require('./config');
+import { app, BrowserWindow } from 'electron';
+import * as url from 'url';
+import { config } from './config';
+
 let win;
 
 function createWindow() {
@@ -13,7 +13,7 @@ function createWindow() {
 
   win.loadURL(url.format(config.url));
 
-  const dev = config.dev || process.argv.indexOf('-dev') >= 0
+  const dev = config.dev || process.argv.indexOf('-dev') >= 0;
 
   if (dev) {
     win.webContents.openDevTools();

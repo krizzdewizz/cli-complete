@@ -7,7 +7,7 @@ export abstract class TerminalService {
   abstract newSession(conf: SessionConf): TerminalSession;
 }
 
-const { TermSession: _TermSession } = remote.require('./server/term-server');
+const { TermSession: _TermSession } = remote.require('./term-server');
 
 @Injectable()
 export class RemoteService extends TerminalService {

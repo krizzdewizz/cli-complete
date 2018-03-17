@@ -1,4 +1,4 @@
-<ngx-monaco-editor #editor [options]="editorOptions" [(ngModel)]="code"></ngx-monaco-editor>
+<div #editorElement class="monaco-editor"></div>
 <clic-prompt [prompt]="prompt"></clic-prompt>
 <clic-terminal (sessionInfo)="onSessionInfo($event)" [style.display]="hasSession ? null : 'none'" #terminal (focusNextGroup)="focusEditor()"
     (pasteFromClipboard)="pasteFromClipboard()"></clic-terminal>

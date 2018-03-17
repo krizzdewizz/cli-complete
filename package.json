@@ -7,7 +7,7 @@
   "scripts": {
     "ng": "ng",
     "start": "concurrently \"ng serve\" \"npm run electron\"",
-    "electron": "node_modules\\electron\\dist\\electron .\\src\\electron --inspect",
+    "electron": "node_modules\\electron\\dist\\electron .\\src\\server\\electron --inspect",
     "build": "npm run copy:client:all && ng build -prod && npm run replace:monaco-url && npm run tsc:server && npm run copy:server:all && npm run copy:config && node gen-package-json.js",
     "test": "yarn-to-come",
     "lint": "tslint --project .",
@@ -45,7 +45,6 @@
     "golden-layout": "1.5.9",
     "jquery": "3.3.1",
     "monaco-editor": "^0.10.1",
-    "ngx-monaco-editor": "^4.0.1",
     "node-pty-prebuilt": "^0.7.3",
     "rxjs": "^5.5.6",
     "xterm": "^3.2.0",

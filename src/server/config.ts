@@ -1,5 +1,4 @@
-// @ts-check
-module.exports = {
+export const config = {
     dev: true,
     icon: './src/favicon.ico',
     url: {
@@ -7,4 +6,4 @@ module.exports = {
         protocol: 'http:',
         slashes: true
     }
-}
+};

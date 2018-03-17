@@ -24,13 +24,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private sessionInfo: SessionInfo;
   private style = { ...Style };
   private dirCompletionItemProvider = new DirCompletionItemProvider();
-  history = new EditorHistory();
 
+  editor: monaco.editor.IStandaloneCodeEditor;
+  history = new EditorHistory();
   prompt = '';
 
   setTabTitle: (title: string) => void = () => undefined;
 
-  @ViewChild('editor') editorCmp;
+  @ViewChild('editorElement') editorElement: ElementRef;
   @ViewChild(TerminalComponent) terminalCmp: TerminalComponent;
 
   editorOptions: monaco.editor.IEditorConstructionOptions = {
@@ -54,10 +55,6 @@ forever`;
     public elRef: ElementRef,
     private promptService: PromptService,
     private fontSizeWheelService: FontSizeWheelService) {
-  }
-
-  get editor(): monaco.editor.IStandaloneCodeEditor {
-    return this.editorCmp._editor;
   }
 
   private get suggestWidget() {
@@ -92,11 +89,9 @@ forever`;
       appEvent.layout.subscribe(() => this.editor.layout()),
     );
 
-    if (!this.editorCmp._editor) {
-      this.editorCmp.initMonaco(this.editorCmp.options);
-    }
+    const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.editorOptions);
 
-    const ed = this.editor;
+    ed.setValue(this.code);
 
     ed.onDidChangeModelContent(e => {
       const change = e.changes[0];

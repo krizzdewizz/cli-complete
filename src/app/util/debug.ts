@@ -1,5 +1,5 @@
 // const { remote } = window.require('electron');
-// const { processTree } = remote.require('./server/process-tree');
+// const { processTree } = remote.require('./process-tree');
 
 // processTree(pid).then(tree => {
 //     console.log('root pid: ', pid);

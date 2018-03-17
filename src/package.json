@@ -1,5 +1,5 @@
 {
     "name": "cli-complete",
     "version": "0.0.0",
-    "main": "electron.js"
+    "main": "server/electron.js"
 }
