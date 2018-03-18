@@ -45,7 +45,7 @@ body {
     border-top: 2px solid transparent;
 
     &.lm_active {
-        color: $color-active-dark;
+        color: $color-inactive-dark;
         &:hover {
             color: $color-dark;
         }
@@ -86,4 +86,22 @@ clic-terminal .terminal {
 
 .clic-tab-flash {
     animation: flash linear 1s infinite;
+}
+
+.clic-tab-number {
+    display: none;
+    position: absolute;
+    right: 3px;
+    top: 1px;
+    background: $color-accent-dark;
+    color: $color-dark;
+    padding: 0px 4px;
+    border-radius: 100%;
+    width: 7px;
+}
+
+.clic-show-tab-number {
+    .clic-tab-number {
+        display: initial;
+    }
 }

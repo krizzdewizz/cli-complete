@@ -233,7 +233,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.prompt = prompt;
       this.setTabTitle(prompt || 'clic');
     }));
-    this.promptService.promptMayChanged(sessionInfo);
     this.frameService.autoexec(content => this.terminalCmp.send(`${content}\r`, false, false));
   }
 

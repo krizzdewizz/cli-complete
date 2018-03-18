@@ -10,8 +10,11 @@ import { autoAnswerYes } from './auto-answer-yes';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { mapInternalCommand } from './internal-command';
 import { appEvent } from '@services/app-event';
+import { ISubscription } from 'rxjs/Subscription';
 
 const { clipboard } = window.require('electron');
+
+let id = 0;
 
 Terminal.applyAddon(fit);
 Terminal.applyAddon(winptyCompat);
@@ -29,8 +32,11 @@ export class TerminalComponent implements OnInit, OnDestroy {
   _sessionInfo: SessionInfo;
   private term: Terminal;
   private session: TerminalSession;
+  private subscriptions: ISubscription[];
 
   private style = { ...Style };
+
+  qid = id++;
 
   @Output() focusNextGroup = new EventEmitter<void>();
   @Output() pasteFromClipboard = new EventEmitter<void>();
@@ -66,6 +72,10 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.subscriptions = [
+      appEvent.resize.subscribe(() => this.fit())
+    ];
+
     const term = this.term = new Terminal({
       ...this.style,
       theme: {
@@ -95,8 +105,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
       this.fit();
     });
 
-    window.addEventListener('resize', this.fit);
-
     this.startSessionInternal();
   }
 
@@ -122,7 +130,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
     session.start();
   }
 
-  private fit = () => {
+  private fit() {
     const term = this.term;
     (term as any).fit();
     if (this.session) {
@@ -131,12 +139,17 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.subscriptions.forEach(it => it.unsubscribe());
     this.session.destroy();
     delete this.session;
-    window.removeEventListener('resize', this.fit);
   }
 
   private onData(data: string) {
+
+    if (this.awaitChunk) {
+      this.awaitChunk = false;
+      this.promptService.promptMayChanged(this._sessionInfo);
+    }
 
     appEvent.sessionData.next(this._sessionInfo.pid);
 
@@ -147,10 +160,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
     autoAnswerYes(data, yesKey => this.send(`${yesKey}\r`, false));
 
-    if (this.awaitChunk) {
-      this.awaitChunk = false;
-      this.promptService.promptMayChanged(this._sessionInfo);
-    }
   }
 
   send(data: string, clear = true, writeDataToTerm = true) {

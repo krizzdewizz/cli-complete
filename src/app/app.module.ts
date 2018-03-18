@@ -15,6 +15,8 @@ import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { QEditorComponent } from './q-editor/q-editor.component';
 import { waitForMonaco } from './editor/monaco-ready';
 import { FrameService } from './frame/frame.service';
+import { ModKeyService } from './frame/mod-key.service';
+import { ModKeyDirective } from './frame/mod-key.directive';
 
 export function waitForMonacoFactory() {
   return () => waitForMonaco();
@@ -28,7 +30,8 @@ export function waitForMonacoFactory() {
     ToolbarComponent,
     TerminalComponent,
     PromptComponent,
-    QEditorComponent
+    QEditorComponent,
+    ModKeyDirective
   ],
   imports: [
     BrowserModule,
@@ -39,7 +42,8 @@ export function waitForMonacoFactory() {
     { provide: APP_INITIALIZER, multi: true, useFactory: waitForMonacoFactory },
     PromptService,
     FontSizeWheelService,
-    FrameService
+    FrameService,
+    ModKeyService
   ],
   entryComponents: [EditorComponent, QEditorComponent],
   bootstrap: [AppComponent]

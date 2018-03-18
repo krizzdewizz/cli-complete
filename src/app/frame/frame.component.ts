@@ -3,8 +3,9 @@ import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
 import { findAncestor, accept } from '@util/util';
-import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT, setFocusedTabElement, forEachEditor } from './frame.service';
+import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT, setFocusedTabElement, forEachEditor, getTabElement } from './frame.service';
 import { registerKeyboardActions } from './keyboard';
+import { ModKeyService } from './mod-key.service';
 
 const Q_EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
@@ -26,7 +27,8 @@ export class FrameComponent implements OnInit, OnDestroy {
     private el: ElementRef,
     private viewContainer: ViewContainerRef,
     private componentFactoryResolver: ComponentFactoryResolver,
-    private frameService: FrameService
+    private frameService: FrameService,
+    private modKeyService: ModKeyService
   ) {
   }
 
@@ -49,6 +51,8 @@ export class FrameComponent implements OnInit, OnDestroy {
     let firstLayout = true;
     this.layout.on('stateChanged', e => {
 
+      let num = 1;
+
       accept(this.layout.root, it => {
         if (it.type === 'stack') {
           try {
@@ -57,6 +61,12 @@ export class FrameComponent implements OnInit, OnDestroy {
             // ignore
           }
           it.on('activeContentItemChanged', this.activeContentItemChanged);
+        } else if (it.componentName === 'clic-editor') {
+          const tab = getTabElement(it);
+          tab.off('click');
+          tab.on('click', () => getContentItemEditor(it).focus());
+          $('.clic-tab-number', tab).text(String(num));
+          num++;
         }
       });
 
@@ -72,6 +82,10 @@ export class FrameComponent implements OnInit, OnDestroy {
     this.layout.on('initialised', () => this.frameService.loadEditorContent(this.layout));
 
     this.layout.registerComponent('clic-editor', (container, state) => {
+      container.on('tab', tab => {
+        tab.element.append($('<div class="clic-tab-number"></div>'));
+      });
+
       this.createComponent<EditorComponent>(container, EditorComponent, ed => {
         ed.setTabTitle = title => container.setTitle(title);
         ed.id = state.clicId;
@@ -80,6 +94,10 @@ export class FrameComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    window.addEventListener('resize', () => {
+      return appEvent.resize.next();
+    });
 
     registerKeyboardActions();
 
@@ -105,6 +123,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
       appEvent.sessionData.subscribe(pid => this.onSessionData(pid)),
       appEvent.focusEditor.subscribe(id => this.onFocusEditor(id)),
+      this.modKeyService.controlDownLong.subscribe(down => this.onControlDownLong(down))
     ];
 
     window.addEventListener('resize', () => this.layout.updateSize());
@@ -112,7 +131,7 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   private onCloseTerminal() {
     let prevItem: GoldenLayout.ContentItem;
-    const found = accept(this.layout.root, (it: any) => {
+    const found = accept(this.layout.root, it => {
       if (it.componentName === 'clic-editor') {
         if (getContentItemEditor(it).isFocused) {
           it.remove();
@@ -135,7 +154,7 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   private onSelectTab(num: number) {
     let index = 1;
-    accept(this.layout.root, (it: any) => {
+    accept(this.layout.root, it => {
       if (it.componentName === 'clic-editor') {
         if (index === num) {
           setFocusedTabElement(it);
@@ -170,5 +189,14 @@ export class FrameComponent implements OnInit, OnDestroy {
         setFocusedTabElement(it, false);
       }
     });
+  }
+
+  private onControlDownLong(down: boolean) {
+    const classList = this.el.nativeElement.classList;
+    if (down) {
+      classList.add('clic-show-tab-number');
+    } else {
+      classList.remove('clic-show-tab-number');
+    }
   }
 }

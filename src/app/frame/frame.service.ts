@@ -175,10 +175,8 @@ export class FrameService {
     const editors = this.settings.editors;
     forEachEditor(layout, (clicId, ed) => {
       const edSettings = editors[clicId];
-      if (edSettings) {
-        ed.content = edSettings.content;
-        ed.selectFirstLine();
-      }
+      ed.content = edSettings.content;
+      ed.selectFirstLine();
     });
 
     const stack = findDescendant(layout.root, it => it.type === 'stack');
