@@ -87,6 +87,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       appEvent.selectTab.subscribe(num => this.onSelectTab(num)),
       appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
+      appEvent.sessionData.subscribe(pid => this.onSessionData(pid)),
     ];
 
     window.addEventListener('resize', () => this.layout.updateSize());
@@ -140,5 +141,9 @@ export class FrameComponent implements OnInit, OnDestroy {
     container.compRef = compRef;
     init(compRef.instance);
     compRef.changeDetectorRef.detectChanges();
+  }
+
+  private onSessionData(pid: number) {
+    this.frameService.flashInactiveTab(this.layout, pid);
   }
 }

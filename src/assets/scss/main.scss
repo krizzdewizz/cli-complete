@@ -55,3 +55,13 @@ clic-terminal .terminal {
         height: 265px !important;
     }
 }
+
+@keyframes flash {
+	0% { background-color: black; }
+	50% { background-color: purple; }
+	100% { background-color: black; }
+}
+
+.clic-tab-flash {
+    animation: flash linear 1s infinite;
+}

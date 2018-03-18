@@ -10,6 +10,7 @@ import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { appEvent } from '@services/app-event';
 import { registerLanguage, CLIC_LANG_ID } from './language';
 import { addEditor, EditorInfo, deleteEditor, Suggest } from './editors';
+import { FrameService } from '../frame/frame.service';
 
 @Component({
   selector: 'clic-editor',
@@ -48,6 +49,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   constructor(
     public elRef: ElementRef,
     private promptService: PromptService,
+    private frameService: FrameService,
     private fontSizeWheelService: FontSizeWheelService) {
   }
 
@@ -215,6 +217,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     return termCmp.hasSession;
   }
 
+  get sessionInfo(): SessionInfo {
+    return this.terminalCmp._sessionInfo;
+  }
+
   restart() {
     this.terminalCmp.startSession();
     this.editor.focus();
@@ -227,6 +233,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.setTabTitle(prompt || 'clic');
     }));
     this.promptService.promptMayChanged(sessionInfo);
+    this.frameService.autoexec(content => this.terminalCmp.send(`${content}\r`, false, false));
   }
 
   pasteFromClipboard() {

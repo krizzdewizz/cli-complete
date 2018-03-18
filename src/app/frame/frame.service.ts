@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { accept } from '@util/util';
 import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
+import { Subject } from 'rxjs';
 
 const { remote } = window.require('electron');
 const path = remote.require('path');
@@ -28,20 +29,26 @@ export function newEditor(): GoldenLayout.ComponentConfig {
   };
 }
 
-export function forEachEditor(layout: GoldenLayoutX, cb: (clicId: string, ed: EditorComponent) => void) {
+export function forEachEditor(layout: GoldenLayoutX, cb: (clicId: string, ed: EditorComponent, contentItem?: GoldenLayout.ContentItem) => void) {
   accept(layout.root, (it: any) => {
     if (it.componentName === 'clic-editor') {
       const clicId = it.container.getState().clicId;
       const ed = getContentItemEditor(it);
-      cb(clicId, ed);
+      return cb(clicId, ed, it);
     }
   });
 }
 
-const SETTINGS_FILE = '.cli-complete.json';
+function settingsDir(): string {
+  return path.join(homedir(), '.cli-complete');
+}
 
-function homeFile(): string {
-  return path.join(homedir(), SETTINGS_FILE);
+function settingsFile(): string {
+  const dir = settingsDir();
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+  return path.join(dir, 'settings.json');
 }
 
 const DEFAULT_EDITOR = newEditor();
@@ -69,12 +76,36 @@ export class FrameService {
   settings: Settings = DEFAULT_SETTINGS;
 
   private saveTimer;
+  private flash = new Subject<any>();
+  private flash$ = this.flash.asObservable();
 
-  constructor() { }
+  constructor() {
+    this.flash$
+      .throttleTime(2000)
+      .subscribe(({ pid, layout }) => {
+        forEachEditor(layout, (_clicId, ed, contentItem: any) => {
+          if (ed.sessionInfo.pid === pid) {
+            const tabEl: JQuery = contentItem.container.tab.element;
+            if (!tabEl.is('.lm_active')) {
+              tabEl.addClass('clic-tab-flash');
+              setTimeout(() => tabEl.removeClass('clic-tab-flash'), 1000);
+            }
+            return true;
+          }
+        });
+      });
+  }
 
   saveSettingsThrottle(layout: GoldenLayoutX) {
     clearTimeout(this.saveTimer);
     this.saveTimer = setTimeout(() => this.saveSettings(layout), 2000);
+  }
+
+  autoexec(cb: (content: string) => void) {
+    ['autoexec.cmd', 'autoexec.bat']
+      .map(it => path.join(settingsDir(), it))
+      .filter(it => fs.existsSync(it))
+      .forEach(cmdFile => cb(String(fs.readFileSync(cmdFile))));
   }
 
   saveSettings(layout: GoldenLayoutX) {
@@ -94,7 +125,7 @@ export class FrameService {
 
     forEachEditor(layout, (clicId, ed) => editors[clicId] = { content: ed.content });
 
-    const home = homeFile();
+    const home = settingsFile();
     try {
       fs.writeFileSync(home, formatJson.diffy(all));
     } catch (err) {
@@ -106,7 +137,7 @@ export class FrameService {
     if (DEBUG) {
       return DEFAULT_SETTINGS;
     }
-    const home = homeFile();
+    const home = settingsFile();
     if (!fs.existsSync(home)) {
       return DEFAULT_SETTINGS;
     }
@@ -132,5 +163,9 @@ export class FrameService {
         ed.selectFirstLine();
       }
     });
+  }
+
+  flashInactiveTab(layout: GoldenLayoutX, pid: number) {
+    this.flash.next({ layout, pid });
   }
 }

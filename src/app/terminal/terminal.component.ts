@@ -9,6 +9,7 @@ import { PromptService } from '@services/prompt.service';
 import { autoAnswerYes } from './auto-answer-yes';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { mapInternalCommand } from './internal-command';
+import { appEvent } from '@services/app-event';
 
 const { clipboard } = window.require('electron');
 
@@ -24,7 +25,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   // cwd-server may be faster than send(), resulting in the wrong cwd -> determine cwd after first chunk arrives from terminal
   private awaitChunk: boolean;
-  private _sessionInfo: SessionInfo;
+  private writeDataToTerm: boolean;
+  _sessionInfo: SessionInfo;
   private term: Terminal;
   private session: TerminalSession;
 
@@ -76,6 +78,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
     // 'native' command line
     term.on('data', data => this.session.send(data));
+    term.on('focus', () => this.writeDataToTerm = true);
 
     term.attachCustomKeyEventHandler(e => {
       if (e.key === 'F6') {
@@ -92,7 +95,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
       this.fit();
     });
 
-    window.addEventListener('resize', () => this.fit());
+    window.addEventListener('resize', this.fit);
 
     this.startSessionInternal();
   }
@@ -119,7 +122,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
     session.start();
   }
 
-  private fit() {
+  private fit = () => {
     const term = this.term;
     (term as any).fit();
     if (this.session) {
@@ -130,11 +133,17 @@ export class TerminalComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.session.destroy();
     delete this.session;
+    window.removeEventListener('resize', this.fit);
   }
 
   private onData(data: string) {
-    this.term.write(data);
-    this.term.scrollToBottom();
+
+    appEvent.sessionData.next(this._sessionInfo.pid);
+
+    if (this.writeDataToTerm) {
+      this.term.write(data);
+      this.term.scrollToBottom();
+    }
 
     autoAnswerYes(data, yesKey => this.send(`${yesKey}\r`, false));
 
@@ -144,7 +153,10 @@ export class TerminalComponent implements OnInit, OnDestroy {
     }
   }
 
-  send(data: string, clear = true) {
+  send(data: string, clear = true, writeDataToTerm = true) {
+    if (writeDataToTerm) {
+      this.writeDataToTerm = true;
+    }
     this.awaitChunk = true;
     this.session.send(mapInternalCommand(data));
     if (clear) {

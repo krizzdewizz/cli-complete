@@ -26,7 +26,7 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "clic",
       "styles": [
-        "assets/scss/index.scss"
+        "assets/scss/main.scss"
       ],
       "scripts": [
         "../node_modules/jquery/dist/jquery.js",
