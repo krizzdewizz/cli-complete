@@ -3,6 +3,10 @@ import { Subject } from 'rxjs/Subject';
 import { spawn } from 'node-pty-prebuilt';
 import { ITerminal } from 'node-pty-prebuilt/lib/interfaces';
 
+export function processEnv() {
+    return process.env;
+}
+
 export class TermSession implements TerminalSession {
 
     private dataSource = new Subject<string>();

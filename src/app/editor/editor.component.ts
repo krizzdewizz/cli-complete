@@ -255,7 +255,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   get content(): string {
-    return this.editor.getValue();
+    return this.editor ? this.editor.getValue() : '';
   }
 
   set content(value: string) {

@@ -143,7 +143,7 @@ export class FrameService {
     forEachEditor(layout, (clicId, ed) => {
       editors[clicId] = {
         content: ed.content,
-        cwd: ed.prompt.procInfo.cwd
+        cwd: ed.prompt.procInfo ? ed.prompt.procInfo.cwd : undefined
       };
     });
 

@@ -8,7 +8,9 @@
                    #terminal
                    (focusNextGroup)="focus()"
                    (pasteFromClipboard)="pasteFromClipboard()"></clic-terminal>
-    <span [style.display]="hasSession ? 'none' : null"
+    <span (click)="restart()"
+          title="Click to restart"
+          [style.display]="hasSession ? 'none' : null"
           class="restart">Terminal session has exited. Press [Enter] to restart.
     </span>
 </ng-container>

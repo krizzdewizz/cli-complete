@@ -12,7 +12,9 @@ import { mapInternalCommand } from './internal-command';
 import { appEvent } from '@services/app-event';
 import { ISubscription } from 'rxjs/Subscription';
 
-const { clipboard } = window.require('electron');
+const { clipboard, remote } = window.require('electron');
+
+const { processEnv } = remote.require('./term-server');
 
 Terminal.applyAddon(fit);
 Terminal.applyAddon(winptyCompat);
@@ -114,8 +116,12 @@ export class TerminalComponent implements OnInit, OnDestroy {
     if (this.session) {
       return;
     }
+    const env = processEnv();
+    const shell = env.comspec || 'c:\\windows\\system32\\cmd.exe';
+    // const shell = 'D:\\prg\\git\\git-bash.exe';
+    // const shell = 'D:\\prg\\tcc\\tcc.exe';
     const session = this.session = this.termService.newSession({
-      shell: 'c:\\windows\\system32\\cmd.exe',
+      shell,
       cwd: this.cwd
     });
     session.onData.subscribe(data => this.onData(data));
@@ -141,8 +147,10 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(it => it.unsubscribe());
-    this.session.destroy();
-    delete this.session;
+    if (this.session) {
+      this.session.destroy();
+      delete this.session;
+    }
   }
 
   private onData(data: string) {
