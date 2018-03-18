@@ -57,14 +57,14 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
             id: 'history-next',
             label: 'History Next',
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.RightArrow, undefined)],
-            run: () => editor.history.next()
+            run: () => editor.info.history.next()
         }),
 
         ed.addAction({
             id: 'history-prev',
             label: 'History Previous',
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow, undefined)],
-            run: () => editor.history.prev()
+            run: () => editor.info.history.prev()
         }),
     ];
 }

@@ -13,7 +13,7 @@ async function findPid(rootPid: number) {
   const tree = await processTree(rootPid);
   let lastChild;
   accept(tree, node => lastChild = node);
-  return lastChild.pid;
+  return lastChild ? lastChild.pid : undefined;
 }
 
 const CWD: CwdServer = _CwdServer.INSTANCE;
@@ -75,14 +75,15 @@ export class PromptService {
     };
 
     const pid = await findPid(sessionInfo.pid);
-    change(pid);
-
-    setTimeout(async () => {
-      const newPid = await findPid(sessionInfo.pid);
-      if (newPid !== pid) {
-        change(newPid);
-      }
-    }, 1000);
+    if (pid) {
+      change(pid);
+      setTimeout(async () => {
+        const newPid = await findPid(sessionInfo.pid);
+        if (newPid && newPid !== pid) {
+          change(newPid);
+        }
+      }, 1000);
+    }
   }
 
   private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {

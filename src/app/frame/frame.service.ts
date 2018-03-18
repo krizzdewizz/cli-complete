@@ -9,6 +9,9 @@ const fs = remote.require('fs');
 const formatJson = remote.require('format-json');
 const { homedir } = remote.require('./homedir');
 
+const DEBUG = false;
+// const DEBUG = true;
+
 export function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
   return (it as any).container.compRef.instance;
 }
@@ -75,6 +78,9 @@ export class FrameService {
   }
 
   saveSettings(layout: GoldenLayoutX) {
+    if (DEBUG) {
+      return;
+    }
     console.log('saving...');
 
     const cfg = layout.toConfig();
@@ -97,6 +103,9 @@ export class FrameService {
   }
 
   loadSettings(): Settings {
+    if (DEBUG) {
+      return DEFAULT_SETTINGS;
+    }
     const home = homeFile();
     if (!fs.existsSync(home)) {
       return DEFAULT_SETTINGS;
@@ -120,6 +129,7 @@ export class FrameService {
       const edSettings = editors[clicId];
       if (edSettings) {
         ed.content = edSettings.content;
+        ed.selectFirstLine();
       }
     });
   }

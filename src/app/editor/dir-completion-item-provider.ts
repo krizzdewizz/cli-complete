@@ -1,9 +1,14 @@
 import { FS } from './file-system';
 import { CompletionItemProviderOrder } from './completion-item-provider';
 import { parsePathPrefix, explodeRelPath } from '@util/util';
+import { getEditor, Suggest } from './editors';
 
 function quote(s: string): string {
     return s.includes(' ') ? `"${s}"` : s;
+}
+
+function isDirCmd(s: string) {
+    return s.trimLeft().startsWith('cd ');
 }
 
 function toInsert(s: string): string {
@@ -94,14 +99,26 @@ export class DirCompletionItemProvider implements monaco.languages.CompletionIte
 
     triggerCharacters = ['\\', '\t'];
 
-    pid: number;
-
     provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken): Promise<monaco.languages.CompletionItem[]> {
 
+        const editorId = model.uri.authority;
+        const info = getEditor(editorId);
+        const sessionInfo = info.sessionInfo;
+        if (info.suggest !== Suggest.DIR || !sessionInfo) {
+            return Promise.resolve([]);
+        }
+
+        const pid = sessionInfo.pid;
         const { lineNumber, column } = position;
 
+        const kinds = [monaco.languages.CompletionItemKind.Folder];
+        const dirCmd = isDirCmd(model.getLineContent(lineNumber));
+        if (!dirCmd) {
+            kinds.push(monaco.languages.CompletionItemKind.File);
+        }
+
         const line = model.getValueInRange(new monaco.Range(lineNumber, 0, lineNumber, model.getLineMaxColumn(lineNumber)));
-        return getCompletions(this.pid, line, column, position, monaco.languages.CompletionItemKind.Folder, monaco.languages.CompletionItemKind.File);
+        return getCompletions(pid, line, column, position, ...kinds);
     }
 
     resolveCompletionItem?(item: monaco.languages.CompletionItem, token: monaco.CancellationToken): monaco.languages.CompletionItem | monaco.Thenable<monaco.languages.CompletionItem> {

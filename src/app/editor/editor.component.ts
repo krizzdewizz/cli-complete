@@ -8,9 +8,8 @@ import { handleCtrlC } from './ctrl-c';
 import { createEditorActions } from './editor-action';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { appEvent } from '@services/app-event';
-import { EditorHistory } from './history';
-import { HistoryCompletionItemProvider } from './history-completion-item-provider';
-import { DirCompletionItemProvider } from './dir-completion-item-provider';
+import { registerLanguage, CLIC_LANG_ID } from './language';
+import { addEditor, EditorInfo, deleteEditor, Suggest } from './editors';
 
 @Component({
   selector: 'clic-editor',
@@ -21,13 +20,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private toDispose: monaco.IDisposable[];
   private subscriptions: ISubscription[] = [];
-  private sessionInfo: SessionInfo;
   private style = { ...Style };
-  private dirCompletionItemProvider = new DirCompletionItemProvider();
+  private ignoreChangeEvent: boolean;
 
+  id: string;
   editor: monaco.editor.IStandaloneCodeEditor;
-  history = new EditorHistory();
   prompt = '';
+  info: EditorInfo;
 
   setTabTitle: (title: string) => void = () => undefined;
 
@@ -59,7 +58,11 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const suggestVisible = this.suggestWidget.suggestWidgetVisible.get();
     if (suggestVisible) {
       this.selectSuggestion(false);
+      if (this.info.suggest === Suggest.HISTORY) {
+        return;
+      }
     }
+    this.info.suggest = Suggest.DIR;
     this.editor.getAction('editor.action.triggerSuggest').run();
   }
 
@@ -75,8 +78,12 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
 
+    registerLanguage();
+
+    this.info = addEditor(this.id);
+
     this.subscriptions.push(
-      this.history.select.subscribe(item => this.selectHistory(item))
+      this.info.history.select.subscribe(item => this.selectHistory(item))
     );
 
     this.subscriptions.push(
@@ -84,6 +91,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     );
 
     const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.editorOptions);
+    const model = monaco.editor.createModel('', CLIC_LANG_ID, monaco.Uri.parse(`clic://${this.id}`));
+    ed.setModel(model);
 
     //     this.content = `echo off & prompt $s
     // dir
@@ -91,15 +100,18 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     // forever`;
 
     ed.onDidChangeModelContent(e => {
+      if (this.ignoreChangeEvent) {
+        return;
+      }
       appEvent.saveLayoutAuto.next();
       const change = e.changes[0];
-      if (change.text === '\\') {
+      if (change.text.endsWith('\\')) {
+        this.info.suggest = Suggest.DIR;
         ed.getAction('editor.action.triggerSuggest').run();
+      } else {
+        this.info.suggest = Suggest.HISTORY;
       }
     });
-
-    monaco.languages.registerCompletionItemProvider('*', new HistoryCompletionItemProvider(this.history));
-    monaco.languages.registerCompletionItemProvider('*', this.dirCompletionItemProvider);
 
     ed.getDomNode().addEventListener('wheel', e => {
       if (this.fontSizeWheelService.onWheel(this.style, e)) {
@@ -155,7 +167,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       text = model.getValueInRange(sel);
     }
 
-    this.history.push(text);
+    this.info.history.push(text);
     this.terminalCmp.send(`${text}\r`);
 
     const clearLine = false;
@@ -175,6 +187,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.toDispose.forEach(it => it.dispose());
     this.subscriptions.forEach(it => it.unsubscribe());
+    deleteEditor(this.id);
   }
 
   focus() {
@@ -200,8 +213,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   onSessionInfo(sessionInfo: SessionInfo) {
-    this.sessionInfo = sessionInfo;
-    this.dirCompletionItemProvider.pid = sessionInfo.pid;
+    this.info.sessionInfo = sessionInfo;
     this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
       this.prompt = prompt;
       this.setTabTitle(prompt || 'clic');
@@ -217,6 +229,17 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   set content(value: string) {
-    this.editor.setValue(value);
+    try {
+      this.ignoreChangeEvent = true;
+      this.editor.setValue(value);
+    } finally {
+      this.ignoreChangeEvent = false;
+    }
+  }
+
+  selectFirstLine() {
+    const ed = this.editor;
+    const maxCol = ed.getModel().getLineMaxColumn(1);
+    ed.setSelection(new monaco.Range(1, 1, 1, maxCol));
   }
 }

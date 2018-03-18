@@ -1,17 +1,23 @@
-import { EditorHistory } from './history';
+import { getEditor, Suggest } from './editors';
 import { CompletionItemProviderOrder } from './completion-item-provider';
+
 
 export class HistoryCompletionItemProvider implements monaco.languages.CompletionItemProvider {
 
     triggerCharacters = ['\t'];
 
-    constructor(private history: EditorHistory) {
+    constructor() {
     }
 
     provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position, token: monaco.CancellationToken): monaco.languages.CompletionItem[] | monaco.Thenable<monaco.languages.CompletionItem[]> | monaco.languages.CompletionList | monaco.Thenable<monaco.languages.CompletionList> {
-
+        const editorId = model.uri.authority;
+        const info = getEditor(editorId);
+        if (info.suggest !== Suggest.HISTORY) {
+            return Promise.resolve([]);
+        }
+        const history = info.history;
         const set = {};
-        this.history.list.forEach(it => set[it] = true);
+        history.list.forEach(it => set[it] = true);
 
         return Object.keys(set).map(it => ({
             label: it,

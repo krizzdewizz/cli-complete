@@ -1,12 +1,10 @@
-import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, ComponentRef } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
 import { findAncestor, accept } from '@util/util';
 import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT } from './frame.service';
-
-const { remote } = window.require('electron');
-const { setGlobalActionCallback } = remote.require('./global-action');
+import { registerKeyboardActions } from './keyboard';
 
 const Q_EDITOR: GoldenLayout.ComponentConfig = {
   type: 'component',
@@ -34,27 +32,6 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   private createAndRegister(layout: GoldenLayout.Config) {
     this.layout = new GoldenLayout(layout, this.layoutContainer.nativeElement);
-    this.layout.registerComponent('clic-editor', container => {
-      const compRef = this.createComponent<EditorComponent>(container, EditorComponent);
-      compRef.instance.setTabTitle = title => container.setTitle(title);
-    });
-  }
-
-  ngOnInit() {
-    const settings = this.frameService.loadSettings();
-    this.createAndRegister(settings.layout);
-
-    try {
-      this.layout.init();
-    } catch (err) {
-      console.log(`error while initializing layout: ${err}. Starting fresh.`);
-      this.layout.destroy();
-      this.createAndRegister(DEFAULT_LAYOUT);
-      this.layout.init();
-    }
-
-    setGlobalActionCallback(it => this.handleGlobalAction(it));
-
     this.layout.on('itemDestroyed', ({ container }) => {
       if (container) {
         const compRef = container.compRef;
@@ -78,10 +55,36 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     this.layout.on('initialised', () => this.frameService.loadEditorContent(this.layout));
 
+    this.layout.registerComponent('clic-editor', (container, state) => {
+      this.createComponent<EditorComponent>(container, EditorComponent, ed => {
+        ed.setTabTitle = title => container.setTitle(title);
+        ed.id = state.clicId;
+      });
+    });
+  }
+
+  ngOnInit() {
+
+    registerKeyboardActions();
+
+    const settings = this.frameService.loadSettings();
+    this.createAndRegister(settings.layout);
+
+    try {
+      this.layout.init();
+    } catch (err) {
+      console.log(`error while initializing layout: ${err}. Starting fresh.`);
+      this.layout.destroy();
+      this.createAndRegister(DEFAULT_LAYOUT);
+      this.layout.init();
+    }
+
     // this.layout.registerComponent('q-editor', (container, state) => this.createComponent<QEditorComponent>(container, QEditorComponent));
 
     this.subscriptions = [
       appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
+      appEvent.closeTerminal.subscribe(() => this.onCloseTerminal()),
+      appEvent.selectTab.subscribe(num => this.onSelectTab(num)),
       appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
     ];
@@ -89,7 +92,7 @@ export class FrameComponent implements OnInit, OnDestroy {
     window.addEventListener('resize', () => this.layout.updateSize());
   }
 
-  onCloseTerminal() {
+  private onCloseTerminal() {
     let prevItem: GoldenLayout.ContentItem;
     const found = accept(this.layout.root, (it: any) => {
       if (it.componentName === 'clic-editor') {
@@ -106,23 +109,13 @@ export class FrameComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleGlobalAction(id: string) {
-    this.handleTabSelect(id);
-
-    switch (id) {
-      case 'close-terminal':
-        return this.onCloseTerminal();
-      case 'new-terminal':
-        return this.onNewTerminal();
-    }
+  private onNewTerminal() {
+    const root = this.layout.root;
+    const container = root.contentItems[0] || root;
+    container.addChild(newEditor());
   }
 
-  private handleTabSelect(id: string) {
-    if (!id.startsWith('select-tab-')) {
-      return;
-    }
-
-    const num = Number(id.split('-')[2]);
+  private onSelectTab(num: number) {
     let index = 1;
     accept(this.layout.root, (it: any) => {
       if (it.componentName === 'clic-editor') {
@@ -136,22 +129,16 @@ export class FrameComponent implements OnInit, OnDestroy {
     });
   }
 
-  onNewTerminal() {
-    const root = this.layout.root;
-    const container = root.contentItems[0] || root;
-    container.addChild(newEditor());
-  }
-
   ngOnDestroy() {
     this.subscriptions.forEach(it => it.unsubscribe());
   }
 
-  private createComponent<T>(container, classs: Type<T>): ComponentRef<T> {
+  private createComponent<T>(container, classs: Type<T>, init: (instance: T) => void = () => undefined): void {
     const factory = this.componentFactoryResolver.resolveComponentFactory<T>(classs);
     const compRef = this.viewContainer.createComponent(factory);
     container.getElement().append(compRef.location.nativeElement);
     container.compRef = compRef;
+    init(compRef.instance);
     compRef.changeDetectorRef.detectChanges();
-    return compRef;
   }
 }
