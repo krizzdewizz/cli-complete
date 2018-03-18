@@ -3,6 +3,7 @@ import { Observable } from 'rxjs/Observable';
 export interface SessionConf {
     name?: string;
     shell: string; // cmd.exe
+    cwd?: string;
 }
 
 export interface SessionInfo {
@@ -23,6 +24,7 @@ export interface TerminalSession {
 
 export interface EditorSettings {
     content: string;
+    cwd?: string;
 }
 
 export interface Settings {

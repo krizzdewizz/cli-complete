@@ -1,7 +1,7 @@
 import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style } from '@style/style';
-import { PromptService } from '@services/prompt.service';
+import { PromptService, Prompt } from '@services/prompt.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
 import { handleCtrlC } from './ctrl-c';
@@ -28,9 +28,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   wasActive: boolean;
   id: string;
   editor: monaco.editor.IStandaloneCodeEditor;
-  prompt = '';
+  prompt: Prompt = { prompt: '' };
   info: EditorInfo;
   initialContent = '';
+  initialCwd: string;
 
   setTabTitle: (title: string) => void = () => undefined;
 
@@ -245,7 +246,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     this.info.sessionInfo = sessionInfo;
     this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
       this.prompt = prompt;
-      this.setTabTitle(prompt || 'clic');
+      this.setTabTitle(this.prompt.prompt || 'clic');
     }));
     this.frameService.autoexec(content => this.terminalCmp.send(`${content}\r`, false, false));
   }

@@ -22,6 +22,12 @@ function formatTitle(title: string) {
   return path.basename(title);
 }
 
+export interface Prompt {
+  prompt: string;
+  sessionInfo?: SessionInfo;
+  procInfo?: ProcessInfo;
+}
+
 @Injectable()
 export class PromptService {
   info = new EventEmitter<string>();
@@ -34,21 +40,21 @@ export class PromptService {
     this.infoTimer = setTimeout(() => this.info.next(''), 1000);
   }
 
-  private prompts: { [pid: number]: EventEmitter<string> } = {};
+  private prompts: { [pid: number]: EventEmitter<Prompt> } = {};
 
   clearPrompt(sessionInfo: SessionInfo) {
     const p = this.prompts[sessionInfo.pid];
     if (p) {
-      this.zone.run(() => p.next(''));
+      this.zone.run(() => p.next({ prompt: '' }));
     }
   }
 
-  getPrompt(sessionInfo: SessionInfo): Observable<string> {
+  getPrompt(sessionInfo: SessionInfo): Observable<Prompt> {
     const pid = sessionInfo.pid;
     const p = this.prompts[pid];
     if (p) { return p; }
 
-    const ee = new EventEmitter<string>();
+    const ee = new EventEmitter<Prompt>();
     this.prompts[pid] = ee;
 
     const origUnsubscribe = ee.unsubscribe.bind(ee);
@@ -100,7 +106,7 @@ export class PromptService {
     const p = this.prompts[sessionInfo.pid];
     if (p) {
       const prompt = this.formatPrompt(sessionInfo, procInfo);
-      this.zone.run(() => p.next(prompt));
+      this.zone.run(() => p.next({ prompt, sessionInfo, procInfo }));
     }
   }
 }

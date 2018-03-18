@@ -140,7 +140,12 @@ export class FrameService {
       editors
     };
 
-    forEachEditor(layout, (clicId, ed) => editors[clicId] = { content: ed.content });
+    forEachEditor(layout, (clicId, ed) => {
+      editors[clicId] = {
+        content: ed.content,
+        cwd: ed.prompt.procInfo.cwd
+      };
+    });
 
     const home = settingsFile();
     try {
@@ -178,6 +183,7 @@ export class FrameService {
       const edSettings = editors[clicId];
       if (edSettings) {
         ed.initialContent = edSettings.content;
+        ed.initialCwd = edSettings.cwd;
       }
     });
 

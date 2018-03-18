@@ -28,7 +28,7 @@ export class TermSession implements TerminalSession {
             name: 'clic-xterm',
             cols: 80,
             rows: 30,
-            cwd: process.cwd(),
+            cwd: this.conf.cwd || process.cwd(),
             env: process.env
         });
 
