@@ -21,5 +21,6 @@
         "relativeUpLevel",
         "relativeDownLevel"
     ],
-    "tslint.alwaysShowRuleFailuresAsWarnings": true
+    "tslint.alwaysShowRuleFailuresAsWarnings": true,
+    "html.format.wrapAttributes": "force-aligned"
 }

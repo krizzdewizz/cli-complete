@@ -25,10 +25,12 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private ignoreChangeEvent: boolean;
   private suggestCompletionContext: monaco.editor.IContextKey<Suggest>;
 
+  wasActive: boolean;
   id: string;
   editor: monaco.editor.IStandaloneCodeEditor;
   prompt = '';
   info: EditorInfo;
+  initialContent = '';
 
   setTabTitle: (title: string) => void = () => undefined;
 
@@ -79,10 +81,12 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  ngAfterViewInit() {
+  activate(): Promise<void> {
+    if (this.wasActive) {
+      return Promise.resolve();
+    }
 
-    registerLanguage();
-
+    this.wasActive = true;
     this.info = addEditor(this.id);
 
     this.subscriptions.push(
@@ -90,49 +94,59 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     );
 
     this.subscriptions.push(
-      appEvent.layout.subscribe(() => this.editor.layout()),
+      appEvent.layout
+        .filter(() => Boolean(this.editor))
+        .subscribe(() => this.editor.layout()),
     );
 
-    const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.editorOptions);
-    const model = monaco.editor.createModel('', CLIC_LANG_ID, monaco.Uri.parse(`clic://${this.id}`));
-    ed.setModel(model);
+    return new Promise(resolve => {
+      setTimeout(() => {
 
-    this.suggestCompletionContext = ed.createContextKey('clicSuggest', Suggest.HISTORY);
+        const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.editorOptions);
+        const model = monaco.editor.createModel('', CLIC_LANG_ID, monaco.Uri.parse(`clic://${this.id}`));
+        ed.setModel(model);
 
-    //     this.content = `echo off & prompt $s
-    // dir
-    // cls
-    // forever`;
+        this.suggestCompletionContext = ed.createContextKey('clicSuggest', Suggest.HISTORY);
 
-    ed.onDidFocusEditorText(() => appEvent.focusEditor.next(this.id));
+        ed.onDidFocusEditorText(() => appEvent.focusEditor.next(this.id));
 
-    ed.onDidChangeModelContent(e => {
-      if (this.ignoreChangeEvent) {
-        return;
-      }
-      appEvent.saveLayoutAuto.next();
-      const change = e.changes[0];
-      if (change.text.endsWith('\\')) {
-        this.suggest = Suggest.DIR;
-        ed.getAction('editor.action.triggerSuggest').run();
-      } else {
-        this.suggest = Suggest.HISTORY;
-      }
+        ed.onDidChangeModelContent(e => {
+          if (this.ignoreChangeEvent) {
+            return;
+          }
+          appEvent.saveLayoutAuto.next();
+          const change = e.changes[0];
+          if (change.text.endsWith('\\')) {
+            this.suggest = Suggest.DIR;
+            ed.getAction('editor.action.triggerSuggest').run();
+          } else {
+            this.suggest = Suggest.HISTORY;
+          }
+        });
+
+        ed.getDomNode().addEventListener('wheel', e => {
+          if (this.fontSizeWheelService.onWheel(this.style, e)) {
+            ed.updateOptions({ fontSize: this.style.fontSize });
+          }
+        });
+
+        this.content = this.initialContent;
+
+        const line = ed.getSelection().startLineNumber;
+        const maxCol = ed.getModel().getLineMaxColumn(line);
+        ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
+
+        ed.layout();
+
+        this.toDispose.push(...createEditorActions(this));
+
+        resolve();
+      });
     });
+  }
 
-    ed.getDomNode().addEventListener('wheel', e => {
-      if (this.fontSizeWheelService.onWheel(this.style, e)) {
-        ed.updateOptions({ fontSize: this.style.fontSize });
-      }
-    });
-
-    const line = ed.getSelection().startLineNumber;
-    const maxCol = ed.getModel().getLineMaxColumn(line);
-    ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
-
-    ed.layout();
-
-    this.toDispose.push(...createEditorActions(this));
+  ngAfterViewInit() {
+    registerLanguage();
   }
 
   private set suggest(suggest: Suggest) {
@@ -219,7 +233,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   get sessionInfo(): SessionInfo {
-    return this.terminalCmp._sessionInfo;
+    return this.terminalCmp ? this.terminalCmp._sessionInfo : undefined;
   }
 
   restart() {

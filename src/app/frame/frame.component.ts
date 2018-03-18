@@ -20,6 +20,7 @@ const Q_EDITOR: GoldenLayout.ComponentConfig = {
 export class FrameComponent implements OnInit, OnDestroy {
   private layout: GoldenLayoutX;
   private subscriptions: Subscription[];
+  private lastFocusEditorId: string;
 
   @ViewChild('layoutContainer') layoutContainer: ElementRef;
 
@@ -32,41 +33,62 @@ export class FrameComponent implements OnInit, OnDestroy {
   ) {
   }
 
-  private activeContentItemChanged = it => {
-    setFocusedTabElement(it);
-  }
-
   private createAndRegister(layout: GoldenLayout.Config) {
     this.layout = new GoldenLayout(layout, this.layoutContainer.nativeElement);
-    this.layout.on('itemDestroyed', ({ container }) => {
+    this.layout.on('itemDestroyed', destroyedItem => {
+      const container = destroyedItem.container;
       if (container) {
         const compRef = container.compRef;
         if (compRef) {
+          let last: GoldenLayout.ContentItem;
+          let beforeDestroyed: GoldenLayout.ContentItem;
+          forEachEditor(this.layout, (_clicId, _ed, it) => {
+            if (it === destroyedItem) {
+              beforeDestroyed = last;
+            }
+            last = it;
+          });
+
+          const tab = findAncestor(beforeDestroyed || last, it => it.type === 'stack');
+          if (tab) {
+            setTimeout(() => {
+              const active = tab.getActiveContentItem();
+              if ((active as any).container.compRef) {
+                getContentItemEditor(active).focus();
+              }
+            });
+          }
           compRef.destroy();
           delete container.compRef;
         }
+
       }
     });
 
     let firstLayout = true;
     this.layout.on('stateChanged', e => {
 
-      let num = 1;
-
+      let tabNum = 1;
+      let lastStack: GoldenLayout.ContentItem;
       accept(this.layout.root, it => {
         if (it.type === 'stack') {
-          try {
-            it.off('activeContentItemChanged', this.activeContentItemChanged);
-          } catch {
-            // ignore
-          }
-          it.on('activeContentItemChanged', this.activeContentItemChanged);
+          lastStack = it;
         } else if (it.componentName === 'clic-editor') {
           const tab = getTabElement(it);
           tab.off('click');
           tab.on('click', () => getContentItemEditor(it).focus());
-          $('.clic-tab-number', tab).text(String(num));
-          num++;
+          $('.clic-tab-number', tab).text(String(tabNum));
+          const active = lastStack.getActiveContentItem();
+          if (active === it) {
+            const ed = getContentItemEditor(it);
+            ed.activate().then(() => {
+              if (ed.id === appEvent.editorIdToFocus || ed.id === this.lastFocusEditorId) {
+                appEvent.editorIdToFocus = '';
+                ed.focus();
+              }
+            });
+          }
+          tabNum++;
         }
       });
 
@@ -131,7 +153,7 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   private onCloseTerminal() {
     let prevItem: GoldenLayout.ContentItem;
-    const found = accept(this.layout.root, it => {
+    accept(this.layout.root, it => {
       if (it.componentName === 'clic-editor') {
         if (getContentItemEditor(it).isFocused) {
           it.remove();
@@ -140,16 +162,21 @@ export class FrameComponent implements OnInit, OnDestroy {
         prevItem = it;
       }
     });
-
-    if (found && prevItem) {
-      getContentItemEditor(prevItem).focus();
-    }
   }
 
   private onNewTerminal() {
-    const root = this.layout.root;
-    const container = root.contentItems[0] || root;
-    container.addChild(newEditor());
+    const focusedItem = accept(this.layout.root, it => {
+      if (it.componentName === 'clic-editor' && getContentItemEditor(it).id === this.lastFocusEditorId) {
+        return it;
+      }
+    });
+
+    const newEd = newEditor();
+    appEvent.editorIdToFocus = newEd.componentState.clicId;
+    const tab = findAncestor(focusedItem, it => it.type === 'stack');
+
+    const parent = tab || this.layout.root;
+    parent.addChild(newEd);
   }
 
   private onSelectTab(num: number) {
@@ -157,9 +184,11 @@ export class FrameComponent implements OnInit, OnDestroy {
     accept(this.layout.root, it => {
       if (it.componentName === 'clic-editor') {
         if (index === num) {
-          setFocusedTabElement(it);
-          const stack = findAncestor(it, anc => anc.type === 'stack');
-          stack.setActiveContentItem(it);
+          getContentItemEditor(it).activate().then(() => {
+            setFocusedTabElement(it);
+            const stack = findAncestor(it, anc => anc.type === 'stack');
+            stack.setActiveContentItem(it);
+          });
         }
         index++;
       }
@@ -184,6 +213,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   }
 
   private onFocusEditor(id: string) {
+    this.lastFocusEditorId = id;
     forEachEditor(this.layout, (clicId, ed, it) => {
       if (clicId === id) {
         setFocusedTabElement(it, false);

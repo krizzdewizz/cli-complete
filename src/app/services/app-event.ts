@@ -10,5 +10,6 @@ export const appEvent = {
     saveLayoutAuto: new EventEmitter<HTMLElement>(),
     sessionData: new EventEmitter<number>(), // pid
     focusEditor: new EventEmitter<string>(), // id
-    resize: new EventEmitter<void>()
+    resize: new EventEmitter<void>(),
+    editorIdToFocus: ''
 };

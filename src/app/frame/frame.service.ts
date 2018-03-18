@@ -3,6 +3,7 @@ import { accept, findDescendant } from '@util/util';
 import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
+import { appEvent } from '@services/app-event';
 
 const { remote } = window.require('electron');
 const path = remote.require('path');
@@ -175,12 +176,14 @@ export class FrameService {
     const editors = this.settings.editors;
     forEachEditor(layout, (clicId, ed) => {
       const edSettings = editors[clicId];
-      ed.content = edSettings.content;
-      ed.selectFirstLine();
+      if (edSettings) {
+        ed.initialContent = edSettings.content;
+      }
     });
 
     const stack = findDescendant(layout.root, it => it.type === 'stack');
-    setFocusedTabElement(stack.getActiveContentItem());
+    const active = stack.getActiveContentItem();
+    appEvent.editorIdToFocus = getContentItemEditor(active).id;
   }
 
   flashInactiveTab(layout: GoldenLayoutX, pid: number) {

@@ -14,8 +14,6 @@ import { ISubscription } from 'rxjs/Subscription';
 
 const { clipboard } = window.require('electron');
 
-let id = 0;
-
 Terminal.applyAddon(fit);
 Terminal.applyAddon(winptyCompat);
 
@@ -35,8 +33,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
   private subscriptions: ISubscription[];
 
   private style = { ...Style };
-
-  qid = id++;
 
   @Output() focusNextGroup = new EventEmitter<void>();
   @Output() pasteFromClipboard = new EventEmitter<void>();
