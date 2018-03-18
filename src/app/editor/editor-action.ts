@@ -33,10 +33,18 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
 
         ed.addAction({
             id: 'triggy',
-            label: 'Trigger Suggest',
+            label: 'Directory Completion',
             keybindings: [monaco.KeyCode.Tab],
             run: () => editor.selectSuggestionAndReopen(),
             keybindingContext: 'editorTextFocus',
+        }),
+
+        ed.addAction({
+            id: 'triggy2',
+            label: 'Directory Completion',
+            keybindings: [monaco.KeyCode.US_BACKSLASH],
+            run: () => editor.selectSuggestionAndReopen(),
+            keybindingContext: 'editorTextFocus && suggestWidgetVisible && clicSuggest==1',
         }),
 
         ed.addAction({

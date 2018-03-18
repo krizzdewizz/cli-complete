@@ -18,10 +18,11 @@ import { addEditor, EditorInfo, deleteEditor, Suggest } from './editors';
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
 
-  private toDispose: monaco.IDisposable[];
+  private toDispose: monaco.IDisposable[] = [];
   private subscriptions: ISubscription[] = [];
   private style = { ...Style };
   private ignoreChangeEvent: boolean;
+  private suggestCompletionContext: monaco.editor.IContextKey<Suggest>;
 
   id: string;
   editor: monaco.editor.IStandaloneCodeEditor;
@@ -62,7 +63,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
         return;
       }
     }
-    this.info.suggest = Suggest.DIR;
+    this.suggest = Suggest.DIR;
     this.editor.getAction('editor.action.triggerSuggest').run();
   }
 
@@ -94,6 +95,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const model = monaco.editor.createModel('', CLIC_LANG_ID, monaco.Uri.parse(`clic://${this.id}`));
     ed.setModel(model);
 
+    this.suggestCompletionContext = ed.createContextKey('clicSuggest', Suggest.HISTORY);
+
     //     this.content = `echo off & prompt $s
     // dir
     // cls
@@ -106,10 +109,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       appEvent.saveLayoutAuto.next();
       const change = e.changes[0];
       if (change.text.endsWith('\\')) {
-        this.info.suggest = Suggest.DIR;
+        this.suggest = Suggest.DIR;
         ed.getAction('editor.action.triggerSuggest').run();
       } else {
-        this.info.suggest = Suggest.HISTORY;
+        this.suggest = Suggest.HISTORY;
       }
     });
 
@@ -126,7 +129,12 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     ed.layout();
     ed.focus();
 
-    this.toDispose = createEditorActions(this);
+    this.toDispose.push(...createEditorActions(this));
+  }
+
+  private set suggest(suggest: Suggest) {
+    this.info.suggest = suggest;
+    this.suggestCompletionContext.set(suggest);
   }
 
   ctrlC() {
