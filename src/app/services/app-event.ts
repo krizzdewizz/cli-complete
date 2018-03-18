@@ -8,5 +8,6 @@ export const appEvent = {
     layout: new EventEmitter<HTMLElement>(),
     saveLayout: new EventEmitter<HTMLElement>(),
     saveLayoutAuto: new EventEmitter<HTMLElement>(),
-    sessionData: new EventEmitter<number>() // pid
+    sessionData: new EventEmitter<number>(), // pid
+    focusEditor: new EventEmitter<string>() // id
 };

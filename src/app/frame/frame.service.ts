@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { accept } from '@util/util';
+import { accept, findDescendant } from '@util/util';
 import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
@@ -15,6 +15,18 @@ const DEBUG = false;
 
 export function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
   return (it as any).container.compRef.instance;
+}
+
+export function getTabElement(it: GoldenLayout.ContentItem): JQuery {
+  return (it as any).container.tab.element;
+}
+
+export function setFocusedTabElement(it: GoldenLayout.ContentItem, focusEditor = true) {
+  $('.lm_tab').removeClass('clic-focus');
+  getTabElement(it).addClass('clic-focus');
+  if (focusEditor) {
+    getContentItemEditor(it).focus();
+  }
 }
 
 function nextId() {
@@ -34,7 +46,7 @@ export function forEachEditor(layout: GoldenLayoutX, cb: (clicId: string, ed: Ed
     if (it.componentName === 'clic-editor') {
       const clicId = it.container.getState().clicId;
       const ed = getContentItemEditor(it);
-      return cb(clicId, ed, it);
+      cb(clicId, ed, it);
     }
   });
 }
@@ -53,6 +65,9 @@ function settingsFile(): string {
 
 const DEFAULT_EDITOR = newEditor();
 export const DEFAULT_LAYOUT: GoldenLayout.Config = {
+  dimensions: {
+    headerHeight: 22 // +2 for border-top
+  },
   content: [{
     type: 'stack',
     content: [
@@ -84,13 +99,12 @@ export class FrameService {
       .throttleTime(2000)
       .subscribe(({ pid, layout }) => {
         forEachEditor(layout, (_clicId, ed, contentItem: any) => {
-          if (ed.sessionInfo.pid === pid) {
-            const tabEl: JQuery = contentItem.container.tab.element;
+          if (ed.sessionInfo && ed.sessionInfo.pid === pid && ed.terminalCmp.writeDataToTerm) {
+            const tabEl = getTabElement(contentItem);
             if (!tabEl.is('.lm_active')) {
               tabEl.addClass('clic-tab-flash');
               setTimeout(() => tabEl.removeClass('clic-tab-flash'), 1000);
             }
-            return true;
           }
         });
       });
@@ -115,7 +129,9 @@ export class FrameService {
     console.log('saving...');
 
     const cfg = layout.toConfig();
-    delete cfg.labels;
+    Object.keys(cfg)
+      .filter(key => key !== 'content')
+      .forEach(key => delete cfg[key]);
 
     const editors: { [id: string]: EditorSettings; } = {};
     const all: Settings = {
@@ -148,6 +164,7 @@ export class FrameService {
         settings = DEFAULT_SETTINGS;
       }
       settings.layout.labels = DEFAULT_LAYOUT.labels;
+      settings.layout.dimensions = DEFAULT_LAYOUT.dimensions;
       return this.settings = settings;
     } catch (err) {
       console.error(`error while reading settings '${home}': ${err}`);
@@ -163,6 +180,9 @@ export class FrameService {
         ed.selectFirstLine();
       }
     });
+
+    const stack = findDescendant(layout.root, it => it.type === 'stack');
+    setFocusedTabElement(stack.getActiveContentItem());
   }
 
   flashInactiveTab(layout: GoldenLayoutX, pid: number) {

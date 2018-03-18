@@ -7,6 +7,7 @@ const prodPack = {
     main: prodPackTemplate.main
 };
 
-['name', 'version', 'license', 'productName', 'description'].forEach(name => prodPack[name] = pack[name]);
+['name', 'version', 'license', 'productName', 'description']
+    .forEach(name => prodPack[name] = pack[name]);
 
 fs.writeFileSync('dist/package.json', JSON.stringify(prodPack));

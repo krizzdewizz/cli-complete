@@ -3,7 +3,7 @@ import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
 import { findAncestor, accept } from '@util/util';
-import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT } from './frame.service';
+import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT, setFocusedTabElement, forEachEditor } from './frame.service';
 import { registerKeyboardActions } from './keyboard';
 
 const Q_EDITOR: GoldenLayout.ComponentConfig = {
@@ -30,6 +30,10 @@ export class FrameComponent implements OnInit, OnDestroy {
   ) {
   }
 
+  private activeContentItemChanged = it => {
+    setFocusedTabElement(it);
+  }
+
   private createAndRegister(layout: GoldenLayout.Config) {
     this.layout = new GoldenLayout(layout, this.layoutContainer.nativeElement);
     this.layout.on('itemDestroyed', ({ container }) => {
@@ -44,6 +48,18 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     let firstLayout = true;
     this.layout.on('stateChanged', e => {
+
+      accept(this.layout.root, it => {
+        if (it.type === 'stack') {
+          try {
+            it.off('activeContentItemChanged', this.activeContentItemChanged);
+          } catch {
+            // ignore
+          }
+          it.on('activeContentItemChanged', this.activeContentItemChanged);
+        }
+      });
+
       appEvent.layout.next();
 
       if (firstLayout) {
@@ -88,6 +104,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
       appEvent.sessionData.subscribe(pid => this.onSessionData(pid)),
+      appEvent.focusEditor.subscribe(id => this.onFocusEditor(id)),
     ];
 
     window.addEventListener('resize', () => this.layout.updateSize());
@@ -121,9 +138,9 @@ export class FrameComponent implements OnInit, OnDestroy {
     accept(this.layout.root, (it: any) => {
       if (it.componentName === 'clic-editor') {
         if (index === num) {
+          setFocusedTabElement(it);
           const stack = findAncestor(it, anc => anc.type === 'stack');
           stack.setActiveContentItem(it);
-          getContentItemEditor(it).focus();
         }
         index++;
       }
@@ -145,5 +162,13 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   private onSessionData(pid: number) {
     this.frameService.flashInactiveTab(this.layout, pid);
+  }
+
+  private onFocusEditor(id: string) {
+    forEachEditor(this.layout, (clicId, ed, it) => {
+      if (clicId === id) {
+        setFocusedTabElement(it, false);
+      }
+    });
   }
 }

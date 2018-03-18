@@ -25,7 +25,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   // cwd-server may be faster than send(), resulting in the wrong cwd -> determine cwd after first chunk arrives from terminal
   private awaitChunk: boolean;
-  private writeDataToTerm: boolean;
+  writeDataToTerm: boolean;
   _sessionInfo: SessionInfo;
   private term: Terminal;
   private session: TerminalSession;

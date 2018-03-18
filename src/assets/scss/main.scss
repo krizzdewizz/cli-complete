@@ -13,7 +13,6 @@ body {
         font-family: Consolas, "Courier New", monospace;
         font-weight: normal;
         font-size: 14px;
-        // letter-spacing: 1px;
     }
 
     display: flex;
@@ -36,11 +35,34 @@ body {
 
 .lm_content {
     background-color: rgb(30, 30, 30);
-    xborder: 1px solid red;
 }
 
 .lm_popout {
     display: none;
+}
+
+.lm_tab {
+    border-top: 2px solid transparent;
+
+    &.lm_active {
+        color: $color-active-dark;
+        &:hover {
+            color: $color-dark;
+        }
+        .lm_close_tab {
+            opacity: 0.4 !important;
+            &:hover {
+                opacity: 1 !important;
+            }
+        }
+    }
+
+    &.clic-focus {
+        border-top-color: $color-accent-dark;
+        &, &:hover {
+            color: $color-dark;
+        }
+    }
 }
 
 clic-terminal .terminal {
@@ -57,9 +79,9 @@ clic-terminal .terminal {
 }
 
 @keyframes flash {
-	0% { background-color: black; }
-	50% { background-color: purple; }
-	100% { background-color: black; }
+	0% { background-color: $color-bg-dark; }
+	50% { background-color: $color-accent-dark; }
+	100% { background-color: $color-bg-dark; }
 }
 
 .clic-tab-flash {

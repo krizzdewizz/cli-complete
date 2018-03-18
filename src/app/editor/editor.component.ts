@@ -104,6 +104,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     // cls
     // forever`;
 
+    ed.onDidFocusEditorText(() => appEvent.focusEditor.next(this.id));
+
     ed.onDidChangeModelContent(e => {
       if (this.ignoreChangeEvent) {
         return;
@@ -129,7 +131,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     ed.setSelection(new monaco.Range(line, maxCol, line, maxCol));
 
     ed.layout();
-    ed.focus();
 
     this.toDispose.push(...createEditorActions(this));
   }

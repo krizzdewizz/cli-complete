@@ -368,6 +368,9 @@ declare module GoldenLayout {
 
     export interface ContentItem {
 
+        off(eventName: string, callback?: Function, context?: any): void;
+        on(eventName: string, callback?: Function, context?: any): void;
+
         addChild(item: ItemConfigType);
         removeChild(item: ContentItem);
 
@@ -451,6 +454,7 @@ declare module GoldenLayout {
          * @param contentItem The new active content item
          */
         setActiveContentItem(contentItem: ContentItem): void;
+        getActiveContentItem(): ContentItem;
 
         /**
          * Returns all items with the specified id.
