@@ -2,6 +2,7 @@ import { SessionConf, TerminalSession, SessionInfo } from '@model/model';
 import { Subject } from 'rxjs/Subject';
 import { spawn } from 'node-pty-prebuilt';
 import { ITerminal } from 'node-pty-prebuilt/lib/interfaces';
+import { processKilled } from './process-info';
 
 export function processEnv() {
     return process.env;
@@ -53,6 +54,7 @@ export class TermSession implements TerminalSession {
 
     destroy() {
         if (this.process) {
+            processKilled(this.process.pid);
             this.process.destroy();
             delete this.process;
         }
