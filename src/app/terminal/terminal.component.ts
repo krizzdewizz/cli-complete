@@ -63,12 +63,9 @@ export class TerminalComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('wheel', ['$event'])
-  onWheel(e: MouseWheelEvent) {
-    if (this.fontSizeWheelService.onWheel(this.style, e)) {
-      this.term.setOption('fontSize', this.style.fontSize);
-      this.fit();
-    }
+  setFontSize(fontSize: number) {
+    this.term.setOption('fontSize', this.style.fontSize = fontSize);
+    this.fit();
   }
 
   ngOnInit() {

@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef, HostListener } from '@angular/core';
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style, EDITOR_LINE_HEIGHT } from '@style/style';
 import { PromptService, Prompt } from '@services/prompt.service';
@@ -38,6 +38,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('editorElement') editorElement: ElementRef;
   @ViewChild(TerminalComponent) terminalCmp: TerminalComponent;
+
+  @HostListener('wheel', ['$event']) onWheel(e) {
+    if (this.fontSizeWheelService.onWheel(this.style, e)) {
+      this.editor.updateOptions({ fontSize: this.style.fontSize });
+      this.terminalCmp.setFontSize(this.style.fontSize);
+    }
+  }
 
   editorOptions: monaco.editor.IEditorConstructionOptions = {
     ...this.style,
@@ -129,12 +136,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           this.updateEditorHeight();
         });
 
-        ed.getDomNode().addEventListener('wheel', e => {
-          if (this.fontSizeWheelService.onWheel(this.style, e)) {
-            ed.updateOptions({ fontSize: this.style.fontSize });
-          }
-        });
-
         this.content = this.initialContent;
 
         const line = ed.getSelection().startLineNumber;
@@ -222,6 +223,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   focus() {
     this.editor.focus();
+    this.updateEditorHeight(true);
   }
 
   get isFocused(): boolean {
@@ -278,16 +280,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     ed.setSelection(new monaco.Range(1, 1, 1, maxCol));
   }
 
-  private updateEditorHeight() {
+  private updateEditorHeight(force = false) {
     const ed = this.editor;
-    let lineCount = ed.getModel().getLineCount();
-    if (this.prevLineCount === lineCount) {
+    const lineCount = 1 + Math.min(10, ed.getModel().getLineCount());
+    if (!force && this.prevLineCount === lineCount) {
       return;
     }
     this.prevLineCount = lineCount;
-    if (lineCount > 1) {
-      lineCount++;
-    }
     const height = lineCount * EDITOR_LINE_HEIGHT;
     ed.getDomNode().style.height = `${height}px`;
     ed.layout();
