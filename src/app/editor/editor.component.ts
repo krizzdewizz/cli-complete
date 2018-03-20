@@ -1,6 +1,6 @@
 import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
 import { TerminalComponent } from '../terminal/terminal.component';
-import { Style } from '@style/style';
+import { Style, EDITOR_LINE_HEIGHT } from '@style/style';
 import { PromptService, Prompt } from '@services/prompt.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
@@ -45,6 +45,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     lineNumbers: 'off',
     minimap: { enabled: false },
     acceptSuggestionOnEnter: 'off',
+    lineHeight: EDITOR_LINE_HEIGHT,
     // suggestOnTriggerCharacters: true,
     // acceptSuggestionOnCommitCharacter: true,
     // language: 'javascript',
@@ -287,7 +288,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     if (lineCount > 1) {
       lineCount++;
     }
-    const height = lineCount * this.style.lineHeight;
+    const height = lineCount * EDITOR_LINE_HEIGHT;
     ed.getDomNode().style.height = `${height}px`;
     ed.layout();
   }
