@@ -8,7 +8,8 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1280,
     height: 864,
-    icon: config.icon
+    icon: config.icon,
+    frame: false
   });
 
   win.loadURL(url.format(config.url));
