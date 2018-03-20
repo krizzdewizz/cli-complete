@@ -20,7 +20,7 @@ export async function getCompletions(pid: number, line: string, offset: number, 
     const part = line.substring(0, offset);
     const prefix = part === '\\' ? part : parsePathPrefix(part).prefix;
 
-    const cwd = (await FS.cwd(pid)).cwd;
+    const cwd = (await FS.processInfo(pid)).cwd;
     let explodedPath: string;
     const exploded = [false];
     let baseDir: string;

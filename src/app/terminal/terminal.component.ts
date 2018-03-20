@@ -26,7 +26,7 @@ Terminal.applyAddon(winptyCompat);
 })
 export class TerminalComponent implements OnInit, OnDestroy {
 
-  // cwd-server may be faster than send(), resulting in the wrong cwd -> determine cwd after first chunk arrives from terminal
+  // getProcessInfo() may be faster than send(), resulting in the wrong cwd -> determine cwd after first chunk arrives from terminal
   private awaitChunk: boolean;
   writeDataToTerm: boolean;
   _sessionInfo: SessionInfo;

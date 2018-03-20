@@ -1,11 +1,11 @@
 const { remote } = window.require('electron');
-import { ProcessInfo } from '@server/cwd-server';
-const { CwdServer } = remote.require('./cwd-server');
+import { ProcessInfo } from '@server/process-info';
+const { getProcessInfo } = remote.require('./process-info');
 const fs = remote.require('fs');
 const path = remote.require('path');
 
 export interface FileSystem {
-    cwd(pid: number): Promise<ProcessInfo>;
+    processInfo(pid: number): Promise<ProcessInfo>;
     readDir(path: string): Promise<string[]>;
     isDirectory(path: string): Promise<boolean>;
     join(...path: string[]): string;
@@ -13,8 +13,8 @@ export interface FileSystem {
 }
 
 export const FS: FileSystem = {
-    cwd(pid: number) {
-        return CwdServer.INSTANCE.getCwd(pid);
+    processInfo(pid: number) {
+        return getProcessInfo(pid);
     },
     readDir(p: string) {
         return new Promise((resolve, reject) => {

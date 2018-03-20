@@ -1,11 +1,11 @@
 import { Injectable, EventEmitter, NgZone } from '@angular/core';
-import { CwdServer, ProcessInfo } from '@server/cwd-server';
+import { ProcessInfo } from '@server/process-info';
 import { Observable } from 'rxjs/Observable';
 import { SessionInfo } from '@model/model';
 import { accept } from '@util/util';
 
 const { remote } = window.require('electron');
-const { CwdServer: _CwdServer } = remote.require('./cwd-server');
+const { processInfoMayChanged, getProcessInfo } = remote.require('./process-info');
 const { processTree } = remote.require('./process-tree');
 const path = remote.require('path');
 
@@ -15,8 +15,6 @@ async function findPid(rootPid: number) {
   accept(tree, node => lastChild = node);
   return lastChild ? lastChild.pid : undefined;
 }
-
-const CWD: CwdServer = _CwdServer.INSTANCE;
 
 function formatTitle(title: string) {
   return path.basename(title);
@@ -75,8 +73,8 @@ export class PromptService {
     }
 
     const change = async (thePid: number) => {
-      CWD.cwdMayChanged(thePid);
-      const procInfo = await CWD.getCwd(thePid);
+      processInfoMayChanged(thePid);
+      const procInfo = await getProcessInfo(thePid);
       this.emitPrompt(sessionInfo, procInfo);
     };
 
