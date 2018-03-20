@@ -3,6 +3,7 @@ import { Subject } from 'rxjs/Subject';
 import { spawn } from 'node-pty-prebuilt';
 import { ITerminal } from 'node-pty-prebuilt/lib/interfaces';
 import { processKilled } from './process-info';
+import * as fs from 'fs';
 
 export function processEnv() {
     return process.env;
@@ -29,11 +30,15 @@ export class TermSession implements TerminalSession {
     }
 
     start() {
+
+        const confCwd = this.conf.cwd;
+        const cwd = confCwd && fs.existsSync(confCwd) ? confCwd : process.cwd();
+
         this.process = spawn(this.conf.shell, [], {
             name: 'clic-xterm',
             cols: 80,
             rows: 30,
-            cwd: this.conf.cwd || process.cwd(),
+            cwd,
             env: process.env
         });
 
