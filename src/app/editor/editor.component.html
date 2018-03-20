@@ -1,7 +1,7 @@
 <ng-container *ngIf="wasActive">
     <div #editorElement
          class="monaco-editor"></div>
-    <clic-prompt [prompt]="prompt.prompt"></clic-prompt>
+    <!-- <clic-prompt [prompt]="prompt.prompt"></clic-prompt> -->
     <clic-terminal (sessionInfo)="onSessionInfo($event)"
                    [cwd]="initialCwd"
                    [style.display]="hasSession ? null : 'none'"

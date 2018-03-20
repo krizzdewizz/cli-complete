@@ -24,6 +24,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private style = { ...Style };
   private ignoreChangeEvent: boolean;
   private suggestCompletionContext: monaco.editor.IContextKey<Suggest>;
+  private prevLineCount: number;
 
   wasActive: boolean;
   id: string;
@@ -123,6 +124,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           } else {
             this.suggest = Suggest.HISTORY;
           }
+
+          this.updateEditorHeight();
         });
 
         ed.getDomNode().addEventListener('wheel', e => {
@@ -262,6 +265,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     try {
       this.ignoreChangeEvent = true;
       this.editor.setValue(value);
+      this.updateEditorHeight();
     } finally {
       this.ignoreChangeEvent = false;
     }
@@ -271,5 +275,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const ed = this.editor;
     const maxCol = ed.getModel().getLineMaxColumn(1);
     ed.setSelection(new monaco.Range(1, 1, 1, maxCol));
+  }
+
+  private updateEditorHeight() {
+    const ed = this.editor;
+    let lineCount = ed.getModel().getLineCount();
+    if (this.prevLineCount === lineCount) {
+      return;
+    }
+    this.prevLineCount = lineCount;
+    if (lineCount > 1) {
+      lineCount++;
+    }
+    const height = lineCount * this.style.lineHeight;
+    ed.getDomNode().style.height = `${height}px`;
+    ed.layout();
   }
 }
