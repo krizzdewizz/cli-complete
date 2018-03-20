@@ -3,9 +3,15 @@
 :host {
     display: flex;
     padding-left: 5px;
+    align-items: center;
 }
 
 .clic-button {
     cursor: pointer;
     font-size: 22px;
+}
+
+.info {
+    margin-left: auto;
+    padding-right: 6px;
 }

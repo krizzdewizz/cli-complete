@@ -41,9 +41,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('wheel', ['$event']) onWheel(e) {
     if (this.fontSizeWheelService.onWheel(this.style, e)) {
-      this.editor.updateOptions({ fontSize: this.style.fontSize });
-      this.terminalCmp.setFontSize(this.style.fontSize);
+      this.resetFontSize(this.style.fontSize);
     }
+  }
+
+  resetFontSize(fontSize = Style.fontSize) {
+    this.editor.updateOptions({ fontSize: fontSize });
+    this.terminalCmp.setFontSize(fontSize);
   }
 
   editorOptions: monaco.editor.IEditorConstructionOptions = {

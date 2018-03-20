@@ -74,5 +74,12 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
             keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow, undefined)],
             run: () => editor.info.history.prev()
         }),
+
+        ed.addAction({
+            id: 'reset-font-size',
+            label: 'Reset Font Size',
+            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.NUMPAD_0, undefined)],
+            run: () => editor.resetFontSize()
+        }),
     ];
 }
