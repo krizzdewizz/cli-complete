@@ -38,8 +38,23 @@ body {
     background-color: rgb(30, 30, 30);
 }
 
-.lm_popout {
-    display: none;
+.lm_header .lm_controls {
+    .lm_popout, .lm_maximise, .lm_close {
+        display: none !important;
+    }
+}
+
+.lm_header {
+    -webkit-app-region: drag;
+}
+
+.lm_tab {
+     -webkit-app-region: no-drag;
+}
+
+.lm_stack:first-of-type .lm_header {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .lm_tab {

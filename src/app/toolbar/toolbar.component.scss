@@ -2,6 +2,7 @@
 
 :host {
     display: flex;
+    height: 8px;
     padding-left: 5px;
     align-items: center;
     -webkit-app-region: drag;
@@ -9,9 +10,14 @@
 }
 
 .clic-button {
+    color: $color-inactive-dark;
     cursor: pointer;
     font-size: 22px;
     -webkit-app-region: no-drag;
+    user-select: none;
+    &:hover {
+        color: $color-dark;
+    }
 }
 
 .info {
@@ -19,15 +25,19 @@
     padding-right: 6px;
 }
 
+.new-session {
+    position: relative;
+    top: 14px;
+    z-index: 1;
+    left: -2px;
+}
+
 .close-window {
+    z-index: 1;
     transform: rotate(45deg);
-    font-size: 30px;
+    font-size: 26px;
     margin-right: 7px;
     position: absolute;
     right: -5px;
-    top: -6px;
-    color: $color-inactive-dark;
-    &:hover {
-        color: $color-dark;
-    }
+    top: 2px;
 }

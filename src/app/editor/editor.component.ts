@@ -11,6 +11,7 @@ import { appEvent } from '@services/app-event';
 import { registerLanguage, CLIC_LANG_ID } from './language';
 import { addEditor, EditorInfo, deleteEditor, Suggest } from './editors';
 import { FrameService } from '../frame/frame.service';
+import { EditorHistory } from './history';
 
 @Component({
   selector: 'clic-editor',
@@ -25,6 +26,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private ignoreChangeEvent: boolean;
   private suggestCompletionContext: monaco.editor.IContextKey<Suggest>;
   private prevLineCount: number;
+  private historySelectSubscription: ISubscription;
 
   active: boolean;
   id: string;
@@ -33,6 +35,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   info: EditorInfo;
   initialContent = '';
   initialCwd: string;
+  initialHistory: string[] = [];
 
   setTabTitle: (title: string) => void = () => undefined;
 
@@ -101,17 +104,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     }
 
     this.active = true;
-    this.info = addEditor(this.id);
-
-    this.subscriptions.push(
-      this.info.history.select.subscribe(item => this.selectHistory(item))
-    );
-
-    this.subscriptions.push(
-      appEvent.layout
-        .filter(() => Boolean(this.editor))
-        .subscribe(() => this.editor.layout()),
-    );
 
     return new Promise(resolve => {
       setTimeout(() => {
@@ -155,8 +147,24 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  setHistory(history: EditorHistory) {
+    if (this.historySelectSubscription) {
+      this.historySelectSubscription.unsubscribe();
+    }
+    this.historySelectSubscription = history.select.subscribe(item => this.selectHistory(item));
+    this.info.history = history;
+  }
+
   ngAfterViewInit() {
     registerLanguage();
+    this.info = addEditor(this.id, this.initialHistory);
+    this.setHistory(this.info.history);
+
+    this.subscriptions.push(
+      appEvent.layout
+        .filter(() => Boolean(this.editor))
+        .subscribe(() => this.editor.layout()),
+    );
   }
 
   private set suggest(suggest: Suggest) {
@@ -222,6 +230,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.toDispose.forEach(it => it.dispose());
     this.subscriptions.forEach(it => it.unsubscribe());
+    if (this.historySelectSubscription) {
+      this.historySelectSubscription.unsubscribe();
+    }
     deleteEditor(this.id);
   }
 

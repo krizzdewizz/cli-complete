@@ -25,6 +25,7 @@ export interface TerminalSession {
 export interface EditorSettings {
     content: string;
     cwd?: string;
+    history?: string[];
 }
 
 export interface Settings {

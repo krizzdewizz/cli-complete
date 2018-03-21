@@ -13,8 +13,8 @@ export interface EditorInfo {
 
 const editors: { [editorId: string]: EditorInfo } = {};
 
-export function addEditor(id: string): EditorInfo {
-    return editors[id] = { history: new EditorHistory(), suggest: Suggest.HISTORY };
+export function addEditor(id: string, history: string[]): EditorInfo {
+    return editors[id] = { history: new EditorHistory(history), suggest: Suggest.HISTORY };
 }
 
 export function getEditor(id: string): EditorInfo {

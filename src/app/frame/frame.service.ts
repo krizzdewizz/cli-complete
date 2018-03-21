@@ -3,6 +3,7 @@ import { accept } from '@util/util';
 import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
+import { EditorHistory } from '../editor/history';
 
 const { remote } = window.require('electron');
 const path = remote.require('path');
@@ -138,7 +139,8 @@ export class FrameService {
     forEachEditor(layout, ed => {
       editors[ed.id] = {
         content: ed.content,
-        cwd: ed.prompt.procInfo ? ed.prompt.procInfo.cwd : undefined
+        cwd: ed.prompt.procInfo ? ed.prompt.procInfo.cwd : undefined,
+        history: ed.info.history.list
       };
     });
 
@@ -184,6 +186,11 @@ export class FrameService {
       if (edSettings) {
         ed.initialContent = edSettings.content;
         ed.initialCwd = edSettings.cwd;
+        const history = edSettings.history || [];
+        ed.initialHistory = history;
+        if (ed.info) {
+          ed.setHistory(new EditorHistory(history));
+        }
       }
     });
   }

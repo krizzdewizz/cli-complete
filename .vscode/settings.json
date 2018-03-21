@@ -10,6 +10,7 @@
         },
         ".chrome-user-data-dir": true,
         "node_modules": false,
+		"packages": true,
         "e2e": true,
         "yarn-error.log": true
     },

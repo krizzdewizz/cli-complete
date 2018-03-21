@@ -47,6 +47,7 @@
     "format-json": "^1.0.3",
     "golden-layout": "1.5.9",
     "jquery": "3.3.1",
+    "js-lru-cache": "^0.1.10",
     "monaco-editor": "^0.10.1",
     "node-pty-prebuilt": "^0.7.3",
     "rxjs": "^5.5.6",

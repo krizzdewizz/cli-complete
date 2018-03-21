@@ -1,21 +1,26 @@
 import { EventEmitter } from '@angular/core';
 
+export const CACHE_MAX = 30;
+
 export class EditorHistory {
     select = new EventEmitter<string>();
 
-    private _list: string[] = [];
-    get list(): string[] {
-        return this._list;
-    }
+    private readonly cache = new LRUCache<string>(CACHE_MAX, Number.POSITIVE_INFINITY);
     private index = 0;
+
+    constructor(list: string[] = []) {
+        list.forEach((it, index) => this.cache.set(String(index), it));
+        this.index = list.length - 1;
+    }
 
     push(s: string) {
         const list = this.list;
+        const len = list.length;
         if (list[list.length - 1] === s) {
             return;
         }
-        list.push(s);
-        this.index = list.length - 1;
+        this.cache.set(String(len), s);
+        this.index = len;
     }
 
     prev() {
@@ -30,6 +35,10 @@ export class EditorHistory {
             this.index++;
             this.emitCurrent();
         }
+    }
+
+    get list(): string[] {
+        return this.cache.values();
     }
 
     private emitCurrent() {
