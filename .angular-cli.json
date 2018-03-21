@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "project": {
-    "name": "clic-complete"
+    "name": "cli-complete"
   },
   "apps": [
     {
@@ -32,7 +32,8 @@
         "../node_modules/jquery/dist/jquery.js",
         "../node_modules/golden-layout/dist/goldenlayout.js",
         "assets/fontawesome-all.js",
-        "../node_modules/xterm/dist/xterm.js"
+        "../node_modules/xterm/dist/xterm.js",
+        "app/lib/baron.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {

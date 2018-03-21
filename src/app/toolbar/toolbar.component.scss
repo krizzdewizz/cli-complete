@@ -5,6 +5,7 @@
     padding-left: 5px;
     align-items: center;
     -webkit-app-region: drag;
+    border-top: 1px solid $color-separator-dark;
 }
 
 .clic-button {
@@ -16,4 +17,17 @@
 .info {
     margin-left: auto;
     padding-right: 6px;
+}
+
+.close-window {
+    transform: rotate(45deg);
+    font-size: 30px;
+    margin-right: 7px;
+    position: absolute;
+    right: -5px;
+    top: -6px;
+    color: $color-inactive-dark;
+    &:hover {
+        color: $color-dark;
+    }
 }

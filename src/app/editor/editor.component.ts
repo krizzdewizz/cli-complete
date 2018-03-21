@@ -26,7 +26,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   private suggestCompletionContext: monaco.editor.IContextKey<Suggest>;
   private prevLineCount: number;
 
-  wasActive: boolean;
+  active: boolean;
   id: string;
   editor: monaco.editor.IStandaloneCodeEditor;
   prompt: Prompt = { prompt: '' };
@@ -43,11 +43,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     if (this.fontSizeWheelService.onWheel(this.style, e)) {
       this.resetFontSize(this.style.fontSize);
     }
-  }
-
-  resetFontSize(fontSize = Style.fontSize) {
-    this.editor.updateOptions({ fontSize: fontSize });
-    this.terminalCmp.setFontSize(fontSize);
   }
 
   editorOptions: monaco.editor.IEditorConstructionOptions = {
@@ -67,6 +62,11 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     private promptService: PromptService,
     private frameService: FrameService,
     private fontSizeWheelService: FontSizeWheelService) {
+  }
+
+  resetFontSize(fontSize = Style.fontSize) {
+    this.editor.updateOptions({ fontSize: fontSize });
+    this.terminalCmp.setFontSize(fontSize);
   }
 
   private get suggestWidget() {
@@ -96,11 +96,11 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   activate(): Promise<void> {
-    if (this.wasActive) {
+    if (this.active) {
       return Promise.resolve();
     }
 
-    this.wasActive = true;
+    this.active = true;
     this.info = addEditor(this.id);
 
     this.subscriptions.push(
@@ -256,12 +256,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     this.info.sessionInfo = sessionInfo;
     this.subscriptions.push(this.promptService.getPrompt(sessionInfo).subscribe(prompt => {
       this.prompt = prompt;
-      this.setTabTitle(this.prompt.prompt || 'clic');
+      this.setTabTitle(this.prompt.prompt || 'cli-complete');
     }));
     this.frameService.autoexec(content => this.terminalCmp.send(`${content}\r`, false, false));
   }
 
   pasteFromClipboard() {
+    this.editor.getAction('editor.action.clipboardPasteAction').run();
+    setTimeout(() => this.editor.focus()); // steal focus from terminal
   }
 
   get content(): string {

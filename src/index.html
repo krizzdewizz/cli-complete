@@ -6,8 +6,11 @@
   <title>cli-complete</title>
   <base href="./">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <link rel="icon"
+        type="image/x-icon"
+        href="favicon.ico">
 </head>
 
 <body>
@@ -27,6 +30,7 @@
 
   <script>
     var __MONACO_PATH = '';
+    var __MONACO_READY = false;
     amdRequire.config({ paths: { 'vs': __MONACO_PATH + "assets/monaco/vs" } });
 
     // workaround monaco-css not understanding the environment
@@ -37,6 +41,7 @@
 
     amdRequire(['vs/editor/editor.main'], function () {
       if (monaco) {
+        __MONACO_READY = true;
         console.log('monaco initialized.')
       }
     });

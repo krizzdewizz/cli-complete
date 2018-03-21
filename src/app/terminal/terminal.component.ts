@@ -16,6 +16,8 @@ const { clipboard, remote } = window.require('electron');
 
 const { processEnv } = remote.require('./term-server');
 
+declare const baron;
+
 Terminal.applyAddon(fit);
 Terminal.applyAddon(winptyCompat);
 
@@ -35,6 +37,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
   private subscriptions: ISubscription[];
 
   private style = { ...Style };
+  private scrollbar;
 
   @Input() cwd: string;
 
@@ -99,6 +102,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
       // Ensure new processes' output starts at start of new line
       // this.term.write('\n\x1b[G');
 
+      const el = this.elRef.nativeElement.querySelector('.xterm-viewport');
+      this.scrollbar = baron(el);
       this.fit();
     });
 
@@ -140,10 +145,12 @@ export class TerminalComponent implements OnInit, OnDestroy {
     if (this.session) {
       this.session.resize(term.cols, term.rows);
     }
+    this.scrollbar.update();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(it => it.unsubscribe());
+    this.scrollbar.dispose();
     if (this.session) {
       this.session.destroy();
       delete this.session;

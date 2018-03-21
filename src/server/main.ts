@@ -2,7 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import * as url from 'url';
 import { config } from './config';
 
-let win;
+let win: BrowserWindow;
 
 function createWindow() {
   win = new BrowserWindow({
@@ -18,6 +18,8 @@ function createWindow() {
 
   if (dev) {
     win.webContents.openDevTools();
+  } else {
+    win.setMenu(null);
   }
 
   win.on('closed', () => win = null);
@@ -35,3 +37,7 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+export function closeWindow() {
+  win.close();
+}

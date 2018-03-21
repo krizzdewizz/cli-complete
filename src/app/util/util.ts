@@ -5,6 +5,7 @@ export function formatPath(path: string): string {
 export interface Node {
     children?: Node[];
     contentItems?: Node[];
+    content?: Node[]; // serialized layout
     parent: Node;
 }
 
@@ -44,7 +45,7 @@ export function accept<R, T extends Node>(node: T, visitor: (node: T) => R): R {
     if (result = visitor(node)) {
         return result;
     }
-    const children = node.children || node.contentItems;
+    const children = node.children || node.contentItems || node.content;
     if (children) {
         for (const child of children) {
             if (result = accept(child, visitor)) {

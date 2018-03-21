@@ -11,5 +11,4 @@ export const appEvent = {
     sessionData: new EventEmitter<number>(), // pid
     focusEditor: new EventEmitter<string>(), // id
     resize: new EventEmitter<void>(),
-    editorIdToFocus: ''
 };

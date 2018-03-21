@@ -1,7 +1,7 @@
 import { HistoryCompletionItemProvider } from './history-completion-item-provider';
 import { DirCompletionItemProvider } from './dir-completion-item-provider';
 
-export const CLIC_LANG_ID = 'clic-lang';
+export const CLIC_LANG_ID = 'cli-complete';
 
 let registered = false;
 

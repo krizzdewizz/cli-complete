@@ -1,9 +1,9 @@
+import { Subject } from './modules';
 import { SessionConf, TerminalSession, SessionInfo } from '@model/model';
-import { Subject } from 'rxjs/Subject';
-import { spawn } from 'node-pty-prebuilt';
-import { ITerminal } from 'node-pty-prebuilt/lib/interfaces';
 import { processKilled } from './process-info';
 import * as fs from 'fs';
+import { spawn } from 'node-pty-prebuilt';
+import { ITerminal } from 'node-pty-prebuilt/lib/interfaces';
 
 export function processEnv() {
     return process.env;

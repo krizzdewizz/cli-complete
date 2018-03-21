@@ -3,6 +3,9 @@ import { appEvent } from '@services/app-event';
 import { ISubscription } from 'rxjs/Subscription';
 import { PromptService } from '@services/prompt.service';
 
+const { remote } = window.require('electron');
+const main = remote.require('./main');
+
 @Component({
   selector: 'clic-toolbar',
   templateUrl: './toolbar.component.html',
@@ -32,5 +35,9 @@ export class ToolbarComponent implements OnInit, OnDestroy {
 
   onSaveLayout() {
     appEvent.saveLayout.next();
+  }
+
+  onCloseWindow() {
+    main.closeWindow();
   }
 }

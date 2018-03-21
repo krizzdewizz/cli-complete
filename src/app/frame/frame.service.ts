@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { accept, findDescendant } from '@util/util';
+import { accept } from '@util/util';
 import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
-import { appEvent } from '@services/app-event';
 
 const { remote } = window.require('electron');
 const path = remote.require('path');
@@ -11,15 +10,17 @@ const fs = remote.require('fs');
 const formatJson = remote.require('format-json');
 const { homedir } = remote.require('./homedir');
 
+export const EDITOR_COMPONENT = 'clic-editor';
+
 const DEBUG = false;
 // const DEBUG = true;
 
 export function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
-  return (it as any).container.compRef.instance;
+  return it.container.compRef.instance;
 }
 
 export function getTabElement(it: GoldenLayout.ContentItem): JQuery {
-  return (it as any).container.tab.element;
+  return it.container.tab.element;
 }
 
 export function setFocusedTabElement(it: GoldenLayout.ContentItem, focusEditor = true) {
@@ -30,24 +31,23 @@ export function setFocusedTabElement(it: GoldenLayout.ContentItem, focusEditor =
   }
 }
 
-function nextId() {
+function nextEditorId() {
   return `ed${Date.now()}`;
 }
 
 export function newEditor(): GoldenLayout.ComponentConfig {
   return {
     type: 'component',
-    componentName: 'clic-editor',
-    componentState: { clicId: nextId() }
+    componentName: EDITOR_COMPONENT,
+    title: '...',
+    componentState: { editorId: nextEditorId() }
   };
 }
 
-export function forEachEditor(layout: GoldenLayoutX, cb: (clicId: string, ed: EditorComponent, contentItem?: GoldenLayout.ContentItem) => void) {
-  accept(layout.root, (it: any) => {
-    if (it.componentName === 'clic-editor') {
-      const clicId = it.container.getState().clicId;
-      const ed = getContentItemEditor(it);
-      cb(clicId, ed, it);
+export function forEachEditor(layout: GoldenLayoutX, cb: (ed: EditorComponent, contentItem?: GoldenLayout.ContentItem) => void) {
+  accept(layout.root, it => {
+    if (it.componentName === EDITOR_COMPONENT) {
+      cb(getContentItemEditor(it), it);
     }
   });
 }
@@ -82,7 +82,7 @@ export const DEFAULT_LAYOUT: GoldenLayout.Config = {
 };
 
 export const DEFAULT_SETTINGS = {
-  editors: { [DEFAULT_EDITOR.componentState.clicId]: { content: '' } },
+  editors: { [DEFAULT_EDITOR.componentState.editorId]: { content: '' } },
   layout: DEFAULT_LAYOUT
 };
 
@@ -99,7 +99,7 @@ export class FrameService {
     this.flash$
       .throttleTime(2000)
       .subscribe(({ pid, layout }) => {
-        forEachEditor(layout, (_clicId, ed, contentItem: any) => {
+        forEachEditor(layout, (ed, contentItem) => {
           if (ed.sessionInfo && ed.sessionInfo.pid === pid && ed.terminalCmp.writeDataToTerm) {
             const tabEl = getTabElement(contentItem);
             if (!tabEl.is('.lm_active')) {
@@ -135,17 +135,17 @@ export class FrameService {
       .forEach(key => delete cfg[key]);
 
     const editors: { [id: string]: EditorSettings; } = {};
-    const all: Settings = {
-      layout: cfg,
-      editors
-    };
-
-    forEachEditor(layout, (clicId, ed) => {
-      editors[clicId] = {
+    forEachEditor(layout, ed => {
+      editors[ed.id] = {
         content: ed.content,
         cwd: ed.prompt.procInfo ? ed.prompt.procInfo.cwd : undefined
       };
     });
+
+    const all: Settings = {
+      layout: cfg,
+      editors
+    };
 
     const home = settingsFile();
     try {
@@ -179,17 +179,13 @@ export class FrameService {
 
   loadEditorContent(layout: GoldenLayoutX) {
     const editors = this.settings.editors;
-    forEachEditor(layout, (clicId, ed) => {
-      const edSettings = editors[clicId];
+    forEachEditor(layout, ed => {
+      const edSettings = editors[ed.id];
       if (edSettings) {
         ed.initialContent = edSettings.content;
         ed.initialCwd = edSettings.cwd;
       }
     });
-
-    const stack = findDescendant(layout.root, it => it.type === 'stack');
-    const active = stack.getActiveContentItem();
-    appEvent.editorIdToFocus = getContentItemEditor(active).id;
   }
 
   flashInactiveTab(layout: GoldenLayoutX, pid: number) {

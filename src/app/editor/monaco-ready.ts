@@ -2,10 +2,10 @@ const DELAY = 200;
 
 export function waitForMonaco() {
     return new Promise((resolve, reject) => {
-        let tries = 20;
+        let tries = 40;
 
         const check = () => {
-            if ((window as any).monaco) {
+            if ((window as any).__MONACO_READY) {
                 resolve();
             } else if (tries > 0) {
                 tries--;

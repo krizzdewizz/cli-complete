@@ -371,6 +371,7 @@ declare module GoldenLayout {
         off(eventName: string, callback?: Function, context?: any): void;
         on(eventName: string, callback?: Function, context?: any): void;
         componentName?: string;
+        container;
         remove();
 
         addChild(item: ItemConfigType);

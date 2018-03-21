@@ -1,5 +1,5 @@
-const { remote } = window.require('electron');
 import { ProcessInfo } from '@server/process-info';
+const { remote } = window.require('electron');
 const { getProcessInfo } = remote.require('./process-info');
 const fs = remote.require('fs');
 const path = remote.require('path');
@@ -16,6 +16,7 @@ export const FS: FileSystem = {
     processInfo(pid: number) {
         return getProcessInfo(pid);
     },
+
     readDir(p: string) {
         return new Promise((resolve, reject) => {
             fs.readdir(p, (err, files) => {
@@ -26,6 +27,7 @@ export const FS: FileSystem = {
             });
         });
     },
+
     isDirectory(p: string) {
         return new Promise((resolve, reject) => {
             fs.lstat(p, (err, stat) => {
@@ -36,9 +38,11 @@ export const FS: FileSystem = {
             });
         });
     },
+
     join(...p: string[]) {
         return path.join(...p);
     },
+
     dirname(p: string) {
         return path.dirname(p);
     }

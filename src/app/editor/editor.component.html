@@ -1,11 +1,11 @@
-<ng-container *ngIf="wasActive">
+<ng-container *ngIf="active">
     <div #editorElement
          class="monaco-editor"></div>
     <!-- <clic-prompt [prompt]="prompt.prompt"></clic-prompt> -->
-    <clic-terminal (sessionInfo)="onSessionInfo($event)"
+    <clic-terminal #terminal
+                   (sessionInfo)="onSessionInfo($event)"
                    [cwd]="initialCwd"
                    [style.display]="hasSession ? null : 'none'"
-                   #terminal
                    (focusNextGroup)="focus()"
                    (pasteFromClipboard)="pasteFromClipboard()"></clic-terminal>
     <span (click)="restart()"
