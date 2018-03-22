@@ -46,15 +46,11 @@ body {
 
 .lm_header {
     -webkit-app-region: drag;
+    margin-right: 34px; // so that add/close buttons are clickable
 }
 
 .lm_tab {
      -webkit-app-region: no-drag;
-}
-
-.lm_stack:first-of-type .lm_header {
-    margin-left: 20px;
-    margin-right: 20px;
 }
 
 .lm_tab {
@@ -119,5 +115,13 @@ clic-terminal .terminal {
 .clic-show-tab-number {
     .clic-tab-number {
         display: initial;
+    }
+}
+
+.no-editors clic-toolbar {
+    height: 30px !important;
+
+    .clic-button {
+        top: -2px;
     }
 }

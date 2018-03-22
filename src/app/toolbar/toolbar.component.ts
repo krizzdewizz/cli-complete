@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { appEvent } from '@services/app-event';
 import { ISubscription } from 'rxjs/Subscription';
 import { PromptService } from '@services/prompt.service';
@@ -12,6 +12,8 @@ const main = remote.require('./main');
   styleUrls: ['./toolbar.component.scss']
 })
 export class ToolbarComponent implements OnInit, OnDestroy {
+
+  @Input() title: boolean;
 
   info: string;
   private subscriptions: ISubscription[] = [];

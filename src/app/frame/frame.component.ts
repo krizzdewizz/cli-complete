@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, HostBinding } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
@@ -18,6 +18,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   private lastFocusEditorId: string;
 
   @ViewChild('layoutContainer') layoutContainer: ElementRef;
+  @HostBinding('class.no-editors') noEditors: boolean;
 
   focusFirstEditor = true;
 
@@ -58,6 +59,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       }
       compRef.destroy();
       delete container.compRef;
+      setTimeout(() => appEvent.resize.emit());
     });
 
     const activeItems: GoldenLayout.ContentItem[] = [];
@@ -75,6 +77,7 @@ export class FrameComponent implements OnInit, OnDestroy {
     this.layout.on('stateChanged', e => {
       let tabNum = 1;
       let lastStack: GoldenLayout.ContentItem;
+      this.noEditors = true;
       accept(this.layout.root, it => {
         if (it.type === 'stack') {
           const active = it.getActiveContentItem();
@@ -83,6 +86,7 @@ export class FrameComponent implements OnInit, OnDestroy {
           }
           lastStack = it;
         } else if (it.componentName === EDITOR_COMPONENT) {
+          this.noEditors = false;
           const ed = getContentItemEditor(it);
           if (!this.lastFocusEditorId || this.focusFirstEditor) {
             this.lastFocusEditorId = ed.id;
