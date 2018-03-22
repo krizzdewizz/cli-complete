@@ -8,6 +8,9 @@ export interface ProcessInfo {
 }
 
 function formatCwd(cwd: string) {
+    if (!cwd) {
+        return '';
+    }
     return cwd.length === 1 ? `${cwd}:\\` : cwd; // windows. If at root, getProcessInfo() says: 'C' or 'D' drive
 }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter, NgZone, Input } from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter, NgZone, Input, HostBinding } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
@@ -51,6 +51,11 @@ export class TerminalComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private promptService: PromptService,
     private fontSizeWheelService: FontSizeWheelService) {
+  }
+
+  // hide 1st line; the command sent from the editor
+  @HostBinding('style.margin-top.px') get marginTop(): number {
+    return -this.style.fontSize - 4;
   }
 
   @HostListener('mouseup', ['$event'])
@@ -131,11 +136,14 @@ export class TerminalComponent implements OnInit, OnDestroy {
       this.promptService.clearPrompt(this._sessionInfo);
       delete this.session;
       delete this._sessionInfo;
+      this.term.clear();
+      this.writeDataToTerm = false;
     }));
     session.onSessionInfo.subscribe(sessionInfo => {
       this._sessionInfo = sessionInfo;
       this.zone.run(() => this.sessionInfo.next(sessionInfo));
     });
+    this.term.clear();
     session.start();
   }
 
@@ -172,7 +180,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
     }
 
     autoAnswerYes(data, yesKey => this.send(`${yesKey}\r`, false));
-
   }
 
   send(data: string, clear = true, writeDataToTerm = true) {

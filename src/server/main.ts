@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu } from 'electron';
 import * as url from 'url';
 import { config } from './config';
+import { createMenu } from './menu';
 
 let win: BrowserWindow;
 
@@ -9,17 +10,18 @@ function createWindow() {
     width: 1280,
     height: 864,
     icon: config.icon,
-    frame: false
+    frame: false,
+    backgroundColor: '#000'
   });
 
   win.loadURL(url.format(config.url));
 
   const dev = config.dev || process.argv.indexOf('-dev') >= 0;
 
+  win.setMenu(Menu.buildFromTemplate(createMenu(dev)));
+
   if (dev) {
     win.webContents.openDevTools();
-  } else {
-    win.setMenu(null);
   }
 
   win.on('closed', () => win = null);
@@ -40,4 +42,8 @@ app.on('activate', () => {
 
 export function closeWindow() {
   win.close();
+}
+
+export function dirname() {
+  return __dirname;
 }

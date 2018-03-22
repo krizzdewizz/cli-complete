@@ -19,6 +19,8 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   @ViewChild('layoutContainer') layoutContainer: ElementRef;
 
+  focusFirstEditor = true;
+
   constructor(
     private el: ElementRef,
     private viewContainer: ViewContainerRef,
@@ -32,13 +34,10 @@ export class FrameComponent implements OnInit, OnDestroy {
     this.layout = new GoldenLayout(layout, this.layoutContainer.nativeElement);
     this.layout.on('itemDestroyed', destroyedItem => {
       const container = destroyedItem.container;
-      if (!container) {
-        return;
-      }
+      if (!container) { return; }
       const compRef = container.compRef;
-      if (!compRef) {
-        return;
-      }
+      if (!compRef) { return; }
+
       let last: GoldenLayout.ContentItem;
       let beforeDestroyed: GoldenLayout.ContentItem;
       forEachEditor(this.layout, (_ed, it) => {
@@ -61,25 +60,50 @@ export class FrameComponent implements OnInit, OnDestroy {
       delete container.compRef;
     });
 
+    const activeItems: GoldenLayout.ContentItem[] = [];
+    const activatedItems: GoldenLayout.ContentItem[] = [];
+
+    this.layout.on('stackCreated', stack => {
+      stack.on('activeContentItemChanged', it => {
+        if (!this.focusFirstEditor) {
+          this.lastFocusEditorId = getContentItemEditor(it).id;
+        }
+      });
+    });
+
     let firstLayout = true;
     this.layout.on('stateChanged', e => {
       let tabNum = 1;
       let lastStack: GoldenLayout.ContentItem;
       accept(this.layout.root, it => {
         if (it.type === 'stack') {
+          const active = it.getActiveContentItem();
+          if (active) {
+            activeItems.push(active);
+          }
           lastStack = it;
         } else if (it.componentName === EDITOR_COMPONENT) {
+          const ed = getContentItemEditor(it);
+          if (!this.lastFocusEditorId || this.focusFirstEditor) {
+            this.lastFocusEditorId = ed.id;
+            this.focusFirstEditor = false;
+          }
           const tab = getTabElement(it);
           tab.off('click');
           tab.on('click', () => getContentItemEditor(it).focus());
           $('.clic-tab-number', tab).text(String(tabNum));
-          const active = lastStack.getActiveContentItem();
-          if (active === it) {
-            getContentItemEditor(it).activate().then(() => setFocusedTabElement(it));
+
+          if (ed.id === this.lastFocusEditorId) {
+            activatedItems.push(it);
+            ed.activate().then(() => setFocusedTabElement(it));
           }
           tabNum++;
         }
       });
+
+      activeItems
+        .filter(it => it.container.compRef && !activatedItems.includes(it))
+        .forEach(it => getContentItemEditor(it).activate());
 
       appEvent.layout.next();
 
@@ -90,7 +114,14 @@ export class FrameComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.layout.on('initialised', () => this.frameService.loadEditorContent(this.layout));
+    this.layout.on('initialised', () => {
+      this.frameService.loadEditorSettings(this.layout);
+      accept(this.layout.root, it => {
+        if (it.type === 'stack') {
+          it.setActiveContentItem(it.contentItems[0]);
+        }
+      });
+    });
 
     this.layout.registerComponent(EDITOR_COMPONENT, (container, state) => {
       container.on('tab', tab => tab.element.append($('<div class="clic-tab-number"></div>')));
@@ -132,6 +163,8 @@ export class FrameComponent implements OnInit, OnDestroy {
     ];
 
     window.addEventListener('resize', () => this.layout.updateSize());
+
+    $('.clic-loading').remove();
   }
 
   private onCloseTerminal() {
@@ -155,7 +188,9 @@ export class FrameComponent implements OnInit, OnDestroy {
     });
     const tab = findAncestor(focusedItem, it => it.type === 'stack');
     const parent = tab || this.layout.root;
-    parent.addChild(newEditor());
+    const ed = newEditor();
+    this.lastFocusEditorId = ed.componentState.editorId;
+    parent.addChild(ed);
   }
 
   private onSelectTab(num: number) {
@@ -163,11 +198,9 @@ export class FrameComponent implements OnInit, OnDestroy {
     accept(this.layout.root, it => {
       if (it.componentName === EDITOR_COMPONENT) {
         if (index === num) {
-          getContentItemEditor(it).activate().then(() => {
-            setFocusedTabElement(it);
-            const stack = findAncestor(it, anc => anc.type === 'stack');
-            stack.setActiveContentItem(it);
-          });
+          const stack = findAncestor(it, anc => anc.type === 'stack');
+          stack.setActiveContentItem(it);
+          this.lastFocusEditorId = getContentItemEditor(it).id;
         }
         index++;
       }

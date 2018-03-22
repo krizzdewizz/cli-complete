@@ -4,12 +4,14 @@ import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
 import { EditorHistory } from '../editor/history';
+import { environment } from '@env/environment';
 
 const { remote } = window.require('electron');
 const path = remote.require('path');
 const fs = remote.require('fs');
 const formatJson = remote.require('format-json');
 const { homedir } = remote.require('./homedir');
+const { dirname } = remote.require('./main');
 
 export const EDITOR_COMPONENT = 'clic-editor';
 
@@ -54,7 +56,8 @@ export function forEachEditor(layout: GoldenLayoutX, cb: (ed: EditorComponent, c
 }
 
 function settingsDir(): string {
-  return path.join(homedir(), '.cli-complete');
+  const home = environment.production ? homedir() : path.resolve(dirname(), '..', '..'); // project root
+  return path.join(home, '.cli-complete');
 }
 
 function settingsFile(): string {
@@ -179,7 +182,7 @@ export class FrameService {
     }
   }
 
-  loadEditorContent(layout: GoldenLayoutX) {
+  loadEditorSettings(layout: GoldenLayoutX) {
     const editors = this.settings.editors;
     forEachEditor(layout, ed => {
       const edSettings = editors[ed.id];

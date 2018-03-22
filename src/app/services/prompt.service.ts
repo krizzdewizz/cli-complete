@@ -12,12 +12,14 @@ const path = remote.require('path');
 async function findPid(rootPid: number) {
   const tree = await processTree(rootPid);
   let lastChild;
-  accept(tree, node => lastChild = node);
+  accept(tree, node => {
+    lastChild = node;
+  });
   return lastChild ? lastChild.pid : undefined;
 }
 
 function formatTitle(title: string) {
-  return path.basename(title);
+  return path.basename(title, path.extname(title));
 }
 
 export interface Prompt {
@@ -75,7 +77,7 @@ export class PromptService {
     const change = async (thePid: number) => {
       processInfoMayChanged(thePid);
       const procInfo = await getProcessInfo(thePid);
-      this.emitPrompt(sessionInfo, procInfo);
+      this.emitPrompt(sessionInfo, procInfo, thePid === sessionInfo.pid);
     };
 
     const pid = await findPid(sessionInfo.pid);
@@ -90,20 +92,20 @@ export class PromptService {
     }
   }
 
-  private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo): string {
+  private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo, procIsSelf: boolean): string {
     // return `${procInfo.cwd} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
     return [
       procInfo.cwd,
-      formatTitle(procInfo.title)
+      procIsSelf ? undefined : formatTitle(procInfo.title)
     ]
       .filter(Boolean)
       .join(' - ');
   }
 
-  private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo) {
+  private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo, procIsSelf: boolean) {
     const p = this.prompts[sessionInfo.pid];
     if (p) {
-      const prompt = this.formatPrompt(sessionInfo, procInfo);
+      const prompt = this.formatPrompt(sessionInfo, procInfo, procIsSelf);
       this.zone.run(() => p.next({ prompt, sessionInfo, procInfo }));
     }
   }

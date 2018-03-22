@@ -55,9 +55,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     minimap: { enabled: false },
     acceptSuggestionOnEnter: 'off',
     lineHeight: EDITOR_LINE_HEIGHT,
+    renderLineHighlight: 'none',
+    scrollbar: {
+      vertical: 'hidden'
+    },
+    overviewRulerLanes: 0,
     // suggestOnTriggerCharacters: true,
     // acceptSuggestionOnCommitCharacter: true,
-    // language: 'javascript',
+    // language: CLIC_LANG_ID,
   };
 
   constructor(
@@ -242,7 +247,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   get isFocused(): boolean {
-    return this.editor.isFocused();
+    return this.editor && this.editor.isFocused();
   }
 
   get hasSession() {
@@ -270,6 +275,16 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.setTabTitle(this.prompt.prompt || 'cli-complete');
     }));
     this.frameService.autoexec(content => this.terminalCmp.send(`${content}\r`, false, false));
+    this.promptService.promptMayChanged(sessionInfo);
+    // because 1st line is hidden, issue a newline to that term prompt is at correct position
+    // delay should be longer than eventual autoexec duration
+    setTimeout(() => {
+      const terminal = this.terminalCmp;
+      // may be gone
+      if (terminal) {
+        terminal.send(`\r`, false, true);
+      }
+    }, 1000);
   }
 
   pasteFromClipboard() {
