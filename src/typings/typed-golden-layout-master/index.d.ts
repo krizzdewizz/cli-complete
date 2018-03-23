@@ -374,7 +374,7 @@ declare module GoldenLayout {
         container;
         remove();
 
-        addChild(item: ItemConfigType);
+        addChild(item: ItemConfigType | ContentItem);
         removeChild(item: ContentItem);
 
         /**

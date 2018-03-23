@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter, NgZone, Input, HostBinding } from '@angular/core';
+import { Component, OnInit, ElementRef, OnDestroy, HostListener, Output, EventEmitter, NgZone, Input } from '@angular/core';
 import { Terminal } from 'xterm';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as winptyCompat from 'xterm/lib/addons/winptyCompat/winptyCompat';
@@ -51,11 +51,6 @@ export class TerminalComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private promptService: PromptService,
     private fontSizeWheelService: FontSizeWheelService) {
-  }
-
-  // hide 1st line; the command sent from the editor
-  @HostBinding('style.margin-top.px') get marginTop(): number {
-    return -this.style.fontSize - 4;
   }
 
   @HostListener('mouseup', ['$event'])

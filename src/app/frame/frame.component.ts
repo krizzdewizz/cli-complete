@@ -163,6 +163,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
       appEvent.sessionData.subscribe(pid => this.onSessionData(pid)),
       appEvent.focusEditor.subscribe(id => this.onFocusEditor(id)),
+      appEvent.splitEditor.subscribe(id => this.onSplitEditor()),
       this.modKeyService.controlDownLong.subscribe(down => this.onControlDownLong(down))
     ];
 
@@ -182,6 +183,33 @@ export class FrameComponent implements OnInit, OnDestroy {
         prevItem = it;
       }
     });
+  }
+
+  private onSplitEditor() {
+    // const focusedItem = accept(this.layout.root, it => {
+    //   if (it.componentName === EDITOR_COMPONENT && getContentItemEditor(it).id === this.lastFocusEditorId) {
+    //     return it;
+    //   }
+    // });
+    // if (!focusedItem) {
+    //   return;
+    // }
+
+    // const tab = findAncestor(focusedItem, it => it.type === 'stack');
+    // const row = findAncestor(tab, it => it.type === 'row');
+    // if (!row) {
+    //   const parent = tab.parent;
+    //   parent.addChild({ type: 'row' });
+    //   const newRow = parent.contentItems[parent.contentItems.length - 1];
+    //   newRow.addChild(tab);
+    //   newRow.addChild({ type: 'stack' });
+    //   const newTab = newRow.contentItems[newRow.contentItems.length - 1];
+
+    //   const ed = newEditor();
+    //   this.lastFocusEditorId = ed.componentState.editorId;
+    //   newTab.addChild(ed);
+    // }
+    // console.log('tabbbb', tab, row);
   }
 
   private onNewTerminal() {
