@@ -15,7 +15,7 @@ export default {
         }),
 
         commonjs({
-            sourceMap: false,  // Default: true
+            sourceMap: false
         })
     ]
 };

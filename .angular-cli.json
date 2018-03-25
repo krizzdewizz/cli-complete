@@ -33,7 +33,6 @@
         "../node_modules/golden-layout/dist/goldenlayout.js",
         "assets/fontawesome-all.js",
         "../node_modules/xterm/dist/xterm.js",
-        "app/lib/baron.js",
         "../node_modules/js-lru-cache/dist/lru-cache.js"
       ],
       "environmentSource": "environments/environment.ts",

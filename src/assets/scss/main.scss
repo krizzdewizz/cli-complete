@@ -6,7 +6,6 @@
 @import '../../../node_modules/golden-layout/src/css/goldenlayout-base.css';
 @import '../../../node_modules/golden-layout/src/css/goldenlayout-dark-theme.css';
 @import '../../../node_modules/xterm/dist/xterm.css';
-@import '../../app/lib/baron.css';
 
 body {
 
@@ -124,4 +123,8 @@ clic-terminal .terminal {
     .clic-button {
         top: -2px;
     }
+}
+
+.xterm .xterm-viewport {
+    overflow-y: hidden;
 }
