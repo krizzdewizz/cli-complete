@@ -128,3 +128,20 @@ clic-terminal .terminal {
 .xterm .xterm-viewport {
     overflow-y: hidden;
 }
+
+.clic-line-run {
+    color: $color-accent-dark;
+    margin-left: 9px;
+    opacity: 0;
+    font-size: 22px;
+    cursor: pointer;
+    top: -2px;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &::after {
+        content: "►"
+    }
+}

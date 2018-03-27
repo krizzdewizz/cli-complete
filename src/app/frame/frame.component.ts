@@ -186,30 +186,36 @@ export class FrameComponent implements OnInit, OnDestroy {
   }
 
   private onSplitEditor() {
-    // const focusedItem = accept(this.layout.root, it => {
-    //   if (it.componentName === EDITOR_COMPONENT && getContentItemEditor(it).id === this.lastFocusEditorId) {
-    //     return it;
-    //   }
-    // });
-    // if (!focusedItem) {
-    //   return;
-    // }
+    const focusedItem = accept(this.layout.root, it => {
+      if (it.componentName === EDITOR_COMPONENT && getContentItemEditor(it).isFocused) {
+        return it;
+      }
+    });
 
-    // const tab = findAncestor(focusedItem, it => it.type === 'stack');
-    // const row = findAncestor(tab, it => it.type === 'row');
-    // if (!row) {
-    //   const parent = tab.parent;
-    //   parent.addChild({ type: 'row' });
-    //   const newRow = parent.contentItems[parent.contentItems.length - 1];
-    //   newRow.addChild(tab);
-    //   newRow.addChild({ type: 'stack' });
-    //   const newTab = newRow.contentItems[newRow.contentItems.length - 1];
+    if (!focusedItem) {
+      return;
+    }
 
-    //   const ed = newEditor();
-    //   this.lastFocusEditorId = ed.componentState.editorId;
-    //   newTab.addChild(ed);
-    // }
-    // console.log('tabbbb', tab, row);
+    const tab = findAncestor(focusedItem, it => it.type === 'stack');
+    const row = findAncestor(tab, it => it.type === 'row');
+
+    let newParent: GoldenLayout.ContentItem;
+    let index;
+    if (row) {
+      newParent = row;
+      index = row.contentItems.indexOf(tab) + 1;
+    } else {
+      const parent = tab.parent;
+      parent.replaceChild(tab, { type: 'row' });
+      const newRow = parent.contentItems[parent.contentItems.length - 1];
+      newRow.addChild(tab);
+      newRow.addChild({ type: 'stack' });
+      newParent = newRow.contentItems[newRow.contentItems.length - 1];
+    }
+
+    const ed = newEditor();
+    this.lastFocusEditorId = ed.componentState.editorId;
+    newParent.addChild(ed, index);
   }
 
   private onNewTerminal() {

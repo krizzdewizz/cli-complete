@@ -50,12 +50,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   editorOptions: monaco.editor.IEditorConstructionOptions = {
     ...this.style,
-    theme: 'vs-dark',
+    theme: 'cli-complete-theme',
     lineNumbers: 'off',
+    glyphMargin: true,
     minimap: { enabled: false },
     acceptSuggestionOnEnter: 'off',
     lineHeight: EDITOR_LINE_HEIGHT,
     renderLineHighlight: 'none',
+    occurrencesHighlight: false,
     scrollbar: {
       vertical: 'hidden'
     },
@@ -121,10 +123,24 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
         ed.onDidFocusEditorText(() => appEvent.focusEditor.next(this.id));
 
+        ed.onMouseDown(e => {
+          const { range, element } = e.target;
+          if (element.classList.contains('clic-line-run')) {
+            const line = range.startLineNumber;
+            ed.setSelection(new monaco.Range(line, 0, line, ed.getModel().getLineMaxColumn(line)));
+            this.send();
+          }
+        });
+
         ed.onDidChangeModelContent(e => {
+          ed.deltaDecorations([], [
+            { range: ed.getModel().getFullModelRange(), options: { isWholeLine: true, glyphMarginClassName: 'clic-line-run' } },
+          ]);
+
           if (this.ignoreChangeEvent) {
             return;
           }
+
           appEvent.saveLayoutAuto.next();
           const change = e.changes[0];
           if (change.text.endsWith('\\')) {
@@ -227,7 +243,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           range: new monaco.Range(line, 1, line, maxCol), text: '', forceMoveMarkers: true
         }]);
       }
-    } else {
+    } else if (sel.isEmpty()) {
       ed.setSelection(new monaco.Range(line, 1, line, maxCol));
     }
   }

@@ -171,6 +171,9 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   send(data: string, clear = true, writeDataToTerm = true) {
+    if (!this.session) {
+      return;
+    }
     if (writeDataToTerm) {
       this.writeDataToTerm = true;
     }

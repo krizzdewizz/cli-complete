@@ -4,19 +4,13 @@ import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
 import { EditorHistory } from '../editor/history';
-import { environment } from '@env/environment';
 
 const { remote } = window.require('electron');
+const { settingsDir, saveSettings, loadSettings } = remote.require('./settings');
 const path = remote.require('path');
 const fs = remote.require('fs');
-const formatJson = remote.require('format-json');
-const { homedir } = remote.require('./homedir');
-const { dirname } = remote.require('./main');
 
 export const EDITOR_COMPONENT = 'clic-editor';
-
-const DEBUG = false;
-// const DEBUG = true;
 
 export function getContentItemEditor(it: GoldenLayout.ContentItem): EditorComponent {
   return it.container.compRef.instance;
@@ -55,19 +49,6 @@ export function forEachEditor(layout: GoldenLayoutX, cb: (ed: EditorComponent, c
   });
 }
 
-function settingsDir(): string {
-  const home = environment.production ? homedir() : path.resolve(dirname(), '..', '..'); // project root
-  return path.join(home, '.cli-complete');
-}
-
-function settingsFile(): string {
-  const dir = settingsDir();
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-  }
-  return path.join(dir, 'settings.json');
-}
-
 const DEFAULT_EDITOR = newEditor();
 export const DEFAULT_LAYOUT: GoldenLayout.Config = {
   dimensions: {
@@ -89,6 +70,8 @@ export const DEFAULT_SETTINGS = {
   editors: { [DEFAULT_EDITOR.componentState.editorId]: { content: '' } },
   layout: DEFAULT_LAYOUT
 };
+
+const SETTINGS_FILE = 'settings.json';
 
 @Injectable()
 export class FrameService {
@@ -128,9 +111,6 @@ export class FrameService {
   }
 
   saveSettings(layout: GoldenLayoutX) {
-    if (DEBUG) {
-      return;
-    }
     console.log('saving...');
 
     const cfg = layout.toConfig();
@@ -152,34 +132,17 @@ export class FrameService {
       editors
     };
 
-    const home = settingsFile();
-    try {
-      fs.writeFileSync(home, formatJson.diffy(all));
-    } catch (err) {
-      console.error(`error while writing settings '${home}': ${err}`);
-    }
+    saveSettings(SETTINGS_FILE, all);
   }
 
   loadSettings(): Settings {
-    if (DEBUG) {
-      return DEFAULT_SETTINGS;
+    let settings = loadSettings(SETTINGS_FILE, DEFAULT_SETTINGS);
+    if (!settings.editors || Object.keys(settings.editors).length === 0) {
+      settings = DEFAULT_SETTINGS;
     }
-    const home = settingsFile();
-    if (!fs.existsSync(home)) {
-      return DEFAULT_SETTINGS;
-    }
-
-    try {
-      let settings: Settings = JSON.parse(String(fs.readFileSync(home)));
-      if (!settings.editors || Object.keys(settings.editors).length === 0) {
-        settings = DEFAULT_SETTINGS;
-      }
-      settings.layout.labels = DEFAULT_LAYOUT.labels;
-      settings.layout.dimensions = DEFAULT_LAYOUT.dimensions;
-      return this.settings = settings;
-    } catch (err) {
-      console.error(`error while reading settings '${home}': ${err}`);
-    }
+    settings.layout.labels = DEFAULT_LAYOUT.labels;
+    settings.layout.dimensions = DEFAULT_LAYOUT.dimensions;
+    return this.settings = settings;
   }
 
   loadEditorSettings(layout: GoldenLayoutX) {
