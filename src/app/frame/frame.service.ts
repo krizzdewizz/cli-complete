@@ -100,7 +100,7 @@ export class FrameService {
 
   saveSettingsThrottle(layout: GoldenLayoutX) {
     clearTimeout(this.saveTimer);
-    this.saveTimer = setTimeout(() => this.saveSettings(layout), 2000);
+    this.saveTimer = setTimeout(() => this.saveSettings(layout), 1000);
   }
 
   autoexec(cb: (content: string) => void) {
@@ -111,8 +111,6 @@ export class FrameService {
   }
 
   saveSettings(layout: GoldenLayoutX) {
-    console.log('saving...');
-
     const cfg = layout.toConfig();
     Object.keys(cfg)
       .filter(key => key !== 'content')

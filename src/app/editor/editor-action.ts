@@ -26,24 +26,32 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         ed.addAction({
             id: 'select-suggestion-and-send',
             label: 'Selection Suggestion and Send',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Shift | monaco.KeyCode.Enter, undefined)],
+            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, undefined)],
             run: () => editor.selectSuggestion(),
             keybindingContext: 'suggestWidgetVisible'
         }),
 
         ed.addAction({
-            id: 'triggy',
-            label: 'Directory Completion',
+            id: 'select-suggestion',
+            label: 'Selection Suggestion',
+            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Shift | monaco.KeyCode.Enter, undefined)],
+            run: () => editor.selectSuggestion(false),
+            keybindingContext: 'suggestWidgetVisible'
+        }),
+
+        ed.addAction({
+            id: 'trigger-directory-suggest',
+            label: 'Trigger Directory Suggest',
             keybindings: [monaco.KeyCode.Tab],
-            run: () => editor.selectSuggestionAndReopen(),
+            run: () => editor.selectSuggestionAndReopen(false),
             keybindingContext: 'editorTextFocus',
         }),
 
         ed.addAction({
-            id: 'triggy2',
-            label: 'Directory Completion',
-            keybindings: [monaco.KeyCode.US_BACKSLASH],
-            run: () => editor.selectSuggestionAndReopen(),
+            id: 'select-and-trigger-directory-suggest',
+            label: 'Select and Trigger Directory Suggest',
+            keybindings: [monaco.KeyCode.Tab, monaco.KeyCode.US_BACKSLASH],
+            run: () => editor.selectSuggestionAndReopen(true),
             keybindingContext: 'editorTextFocus && suggestWidgetVisible && clicSuggest==1',
         }),
 

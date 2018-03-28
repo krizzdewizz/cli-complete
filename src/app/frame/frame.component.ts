@@ -59,7 +59,6 @@ export class FrameComponent implements OnInit, OnDestroy {
       }
       compRef.destroy();
       delete container.compRef;
-      setTimeout(() => appEvent.resize.emit());
     });
 
     const activeItems: GoldenLayout.ContentItem[] = [];
@@ -109,7 +108,7 @@ export class FrameComponent implements OnInit, OnDestroy {
         .filter(it => it.container.compRef && !activatedItems.includes(it))
         .forEach(it => getContentItemEditor(it).activate());
 
-      appEvent.layout.next();
+      setTimeout(() => appEvent.layout.emit());
 
       if (firstLayout) {
         firstLayout = false;
@@ -139,7 +138,7 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
-    window.addEventListener('resize', () => appEvent.resize.next());
+    window.addEventListener('resize', () => appEvent.layout.next());
 
     registerKeyboardActions();
 

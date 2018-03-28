@@ -11,6 +11,7 @@ import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { mapInternalCommand } from './internal-command';
 import { appEvent } from '@services/app-event';
 import { ISubscription } from 'rxjs/Subscription';
+import { loadAlias } from './alias';
 
 const { clipboard, remote } = window.require('electron');
 
@@ -69,8 +70,11 @@ export class TerminalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+
+    loadAlias();
+
     this.subscriptions = [
-      appEvent.resize.subscribe(() => this.fit())
+      appEvent.layout.subscribe(() => this.fit())
     ];
 
     const term = this.term = new Terminal({
@@ -139,6 +143,9 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   private fit() {
     const term = this.term;
+    if (!term.element) {
+      return;
+    }
     (term as any).fit();
     if (this.session) {
       this.session.resize(term.cols, term.rows);
@@ -167,10 +174,10 @@ export class TerminalComponent implements OnInit, OnDestroy {
       this.term.scrollToBottom();
     }
 
-    autoAnswerYes(data, yesKey => this.send(`${yesKey}\r`, false));
+    autoAnswerYes(data, yesKey => this.send(yesKey, { clear: false }));
   }
 
-  send(data: string, clear = true, writeDataToTerm = true) {
+  send(data: string, { newLine = true, clear = true, writeDataToTerm = true } = {}) {
     if (!this.session) {
       return;
     }
@@ -178,7 +185,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
       this.writeDataToTerm = true;
     }
     this.awaitChunk = true;
-    this.session.send(mapInternalCommand(data));
+    const cmd = mapInternalCommand(data);
+    this.session.send(newLine ? `${cmd}\r` : cmd);
     if (clear) {
       this.term.clear();
     }

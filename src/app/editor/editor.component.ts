@@ -52,7 +52,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     ...this.style,
     theme: 'cli-complete-theme',
     lineNumbers: 'off',
-    glyphMargin: true,
+    lineDecorationsWidth: 15,
     minimap: { enabled: false },
     acceptSuggestionOnEnter: 'off',
     lineHeight: EDITOR_LINE_HEIGHT,
@@ -83,12 +83,14 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     return (this.editor as any).contentWidgets['editor.widget.suggestWidget'].widget;
   }
 
-  selectSuggestionAndReopen() {
-    const suggestVisible = this.suggestWidget.suggestWidgetVisible.get();
-    if (suggestVisible) {
-      this.selectSuggestion(false);
-      if (this.info.suggest === Suggest.HISTORY) {
-        return;
+  selectSuggestionAndReopen(selectSuggestion: boolean) {
+    if (selectSuggestion) {
+      const suggestVisible = this.suggestWidget.suggestWidgetVisible.get();
+      if (suggestVisible) {
+        this.selectSuggestion(false);
+        if (this.info.suggest === Suggest.HISTORY) {
+          return;
+        }
       }
     }
     this.suggest = Suggest.DIR;
@@ -135,7 +137,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
         ed.onDidChangeModelContent(e => {
           ed.deltaDecorations([], [
-            { range: ed.getModel().getFullModelRange(), options: { isWholeLine: true, glyphMarginClassName: 'clic-line-run' } },
+            { range: ed.getModel().getFullModelRange(), options: { isWholeLine: true, linesDecorationsClassName: 'clic-line-run' } },
           ]);
 
           if (this.ignoreChangeEvent) {
@@ -196,7 +198,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   ctrlC() {
     handleCtrlC(
-      () => this.terminalCmp.send(String.fromCharCode(3), false),
+      () => this.terminalCmp.send(String.fromCharCode(3), { newLine: false, clear: false }),
       () => this.editor.getAction('editor.action.clipboardCopyAction').run()
     );
   }
@@ -233,7 +235,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     }
 
     this.info.history.push(text);
-    this.terminalCmp.send(`${text}\r`);
+    this.terminalCmp.send(text);
 
     const clearLine = false;
     if (clearLine) {
@@ -291,17 +293,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.prompt = prompt;
       this.setTabTitle(this.prompt.prompt || 'cli-complete');
     }));
-    this.frameService.autoexec(content => this.terminalCmp.send(`${content}\r`, false, false));
+    this.frameService.autoexec(content => this.terminalCmp.send(content, { clear: false, writeDataToTerm: false }));
     this.promptService.promptMayChanged(sessionInfo);
-    // because 1st line is hidden, issue a newline to that term prompt is at correct position
-    // delay should be longer than eventual autoexec duration
-    setTimeout(() => {
-      const terminal = this.terminalCmp;
-      // may be gone
-      if (terminal) {
-        terminal.send(`\r`, false, true);
-      }
-    }, 1000);
   }
 
   pasteFromClipboard() {

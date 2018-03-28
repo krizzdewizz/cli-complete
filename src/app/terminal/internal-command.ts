@@ -1,6 +1,10 @@
 import { parsePathPrefix, explodeRelPath } from '@util/util';
+import { getAlias } from './alias';
 
 export function mapInternalCommand(cmd: string): string {
+
+    cmd = getAlias(cmd);
+
     const cdd = 'cdd ';
     if (cmd.startsWith(cdd)) {
         const path = cmd.substring(cdd.length).trimLeft();
@@ -14,12 +18,12 @@ export function mapInternalCommand(cmd: string): string {
     const mcd = 'mcd';
     if (cmd.startsWith(mcd)) {
         const path = cmd.substring(mcd.length).trim();
-        return `md ${path}&cd ${path}\r`;
+        return `md ${path}&cd ${path}`;
     }
 
     // autocd
     if (cmd.trimRight().endsWith('\\') && !parsePathPrefix(cmd).hadSpace) {
-        cmd = `cd ${explodeRelPath(cmd)}\r`;
+        cmd = `cd ${explodeRelPath(cmd)}`;
     }
 
     return cmd;

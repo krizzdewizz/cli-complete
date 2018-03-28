@@ -35,7 +35,7 @@ export function registerKeyboardActions() {
     window.addEventListener('keydown', e => {
         const accel = keyToAccel(e);
         const action = actions[accel];
-        console.log('keydown', accel, action);
+        // console.log('keydown', accel, action);
         if (action) {
             action();
             e.preventDefault();
