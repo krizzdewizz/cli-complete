@@ -2,13 +2,27 @@ import { app, BrowserWindow, Menu } from 'electron';
 import * as url from 'url';
 import { config } from './config';
 import { createMenu } from './menu';
+import { loadSettings, saveSettings } from './settings';
 
 let win: BrowserWindow;
 
+interface ServerSettings {
+  window: {
+    width: number;
+    height: number;
+    x?: number;
+    y?: number;
+  };
+}
+
+const SETTINGS_FILE = 'server-settings.json';
+const DEFAULT_SETTINGS = { window: { width: 1280, height: 864 } };
+let settings: ServerSettings;
+
 function createWindow() {
+  settings = loadSettings<ServerSettings>(SETTINGS_FILE, DEFAULT_SETTINGS);
   win = new BrowserWindow({
-    width: 1280,
-    height: 864,
+    ...settings.window,
     icon: config.icon,
     frame: false,
     backgroundColor: '#000'
@@ -23,6 +37,17 @@ function createWindow() {
   if (dev) {
     win.webContents.openDevTools();
   }
+
+  const saveBounds = () => {
+    if (!win.isMaximized()) {
+      Object.assign(settings.window, win.getBounds());
+    }
+  };
+
+  win.on('resize', () => saveBounds());
+  win.on('move', () => saveBounds());
+
+  win.on('close', () => saveSettings<ServerSettings>(SETTINGS_FILE, settings));
 
   win.on('closed', () => win = null);
 }

@@ -128,6 +128,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           if (element.classList.contains('clic-line-run')) {
             const line = range.startLineNumber;
             ed.setSelection(new monaco.Range(line, 0, line, ed.getModel().getLineMaxColumn(line)));
+            ed.focus();
             this.send();
           }
         });

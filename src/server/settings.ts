@@ -17,7 +17,7 @@ export function settingsFile(name: string): string {
     return path.join(dir, name);
 }
 
-export function saveSettings(name: string, settings) {
+export function saveSettings<T>(name: string, settings: T) {
     const home = settingsFile(name);
     try {
         fs.writeFileSync(home, formatJson.diffy(settings));
@@ -26,7 +26,7 @@ export function saveSettings(name: string, settings) {
     }
 }
 
-export function loadSettings<T>(name: string, def: T) {
+export function loadSettings<T>(name: string, def: T): T {
     const file = settingsFile(name);
     if (!fs.existsSync(file)) {
         return def;
