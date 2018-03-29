@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, HostBinding } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, HostBinding, NgZone } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
 import { Subscription } from 'rxjs/Subscription';
 import { appEvent } from '@services/app-event';
@@ -27,7 +27,8 @@ export class FrameComponent implements OnInit, OnDestroy {
     private viewContainer: ViewContainerRef,
     private componentFactoryResolver: ComponentFactoryResolver,
     private frameService: FrameService,
-    private modKeyService: ModKeyService
+    private modKeyService: ModKeyService,
+    private zone: NgZone
   ) {
   }
 
@@ -65,6 +66,13 @@ export class FrameComponent implements OnInit, OnDestroy {
     const activatedItems: GoldenLayout.ContentItem[] = [];
 
     this.layout.on('stackCreated', stack => {
+
+      const span = document.createElement('span');
+      span.classList.add('clic-new-terminal');
+      span.title = 'New Terminal';
+      $('.lm_header', stack.element).append(span);
+      span.addEventListener('click', () => this.zone.run(() => this.onNewTerminal(stack)));
+
       stack.on('activeContentItemChanged', it => {
         if (!this.focusFirstEditor) {
           this.lastFocusEditorId = getContentItemEditor(it).id;
@@ -156,7 +164,7 @@ export class FrameComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptions = [
-      appEvent.newTerminal.subscribe(() => this.onNewTerminal()),
+      appEvent.newTerminal.subscribe(stack => this.onNewTerminal(stack)),
       appEvent.closeTerminal.subscribe(() => this.onCloseTerminal()),
       appEvent.selectTab.subscribe(num => this.onSelectTab(num)),
       appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
@@ -219,14 +227,16 @@ export class FrameComponent implements OnInit, OnDestroy {
     newParent.addChild(newEd, index);
   }
 
-  private onNewTerminal() {
-    const focusedItem = accept(this.layout.root, it => {
-      if (it.componentName === EDITOR_COMPONENT && getContentItemEditor(it).id === this.lastFocusEditorId) {
-        return it;
-      }
-    });
-    const tab = findAncestor(focusedItem, it => it.type === 'stack');
-    const parent = tab || this.layout.root;
+  private onNewTerminal(stack: GoldenLayout.ContentItem) {
+    if (!stack) {
+      const focusedItem = accept(this.layout.root, it => {
+        if (it.componentName === EDITOR_COMPONENT && getContentItemEditor(it).id === this.lastFocusEditorId) {
+          return it;
+        }
+      });
+      stack = findAncestor(focusedItem, it => it.type === 'stack');
+    }
+    const parent = stack || this.layout.root;
     const ed = newEditor();
     this.lastFocusEditorId = ed.componentState.editorId;
     parent.addChild(ed);

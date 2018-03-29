@@ -61,7 +61,7 @@ export const DEFAULT_LAYOUT: GoldenLayout.Config = {
     ]
   }],
   labels: {
-    close: 'Close (Ctrl+W)',
+    close: 'Close',
     maximise: 'Maximize'
   }
 };

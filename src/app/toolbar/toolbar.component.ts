@@ -31,12 +31,8 @@ export class ToolbarComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(it => it.unsubscribe());
   }
 
-  onNewSession() {
+  onNewTerminal() {
     appEvent.newTerminal.next();
-  }
-
-  onSaveLayout() {
-    appEvent.saveLayout.next();
   }
 
   onCloseWindow() {

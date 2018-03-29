@@ -1,7 +1,7 @@
 import { EventEmitter } from '@angular/core';
 
 export const appEvent = {
-    newTerminal: new EventEmitter<void>(),
+    newTerminal: new EventEmitter<GoldenLayout.ContentItem>(), // optional stack
     closeTerminal: new EventEmitter<void>(),
     selectTab: new EventEmitter<number>(),
     pipeToQEditor: new EventEmitter<HTMLElement>(),

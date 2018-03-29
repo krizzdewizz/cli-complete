@@ -55,6 +55,10 @@ body {
 .lm_tab {
     border-top: 2px solid transparent;
 
+    &:first-of-type {
+        margin-left: 20px;
+    }
+
     &.lm_active {
         color: $color-inactive-dark;
         &:hover {
@@ -122,6 +126,10 @@ clic-terminal .terminal {
 
     .clic-button {
         top: -2px;
+
+        &.new-terminal {
+            display: initial;
+        }
     }
 }
 
@@ -142,5 +150,25 @@ clic-terminal .terminal {
 
     &::after {
         content: "►"
+    }
+}
+
+.clic-new-terminal {
+    position: relative;
+    display: inline-block;
+    font-size: 20px;
+    left: 4px;
+    top: -2px;
+    width: 17px;
+    color: $color-inactive-dark;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+
+    &::before {
+        content: "+";
+    }
+
+    &:hover {
+        color: $color-dark;
     }
 }

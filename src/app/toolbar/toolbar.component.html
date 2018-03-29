@@ -1,9 +1,8 @@
 <span *ngIf="title">cli-complete</span>
 <span class="info">{{info}}</span>
-<span class="clic-button new-session"
-      (click)="onNewSession()"
-      title="New Terminal (Ctrl+T)">+</span>
+<span class="clic-button new-terminal"
+      (click)="onNewTerminal()"
+      title="New Terminal">+</span>
 <span class="clic-button close-window"
       (click)="onCloseWindow()"
-      title="Close Window (Alt+F4)">+</span>
-<!-- <span class="clic-button far fa-save" (click)="onSaveLayout()"></span> -->
+      title="Close Window">+</span>

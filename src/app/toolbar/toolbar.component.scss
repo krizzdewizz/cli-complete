@@ -3,7 +3,7 @@
 :host {
     display: flex;
     height: 8px;
-    padding-left: 5px;
+    padding-left: 25px;
     align-items: center;
     -webkit-app-region: drag;
     border-top: 1px solid $color-separator-dark;
@@ -23,14 +23,22 @@
     &:hover {
         color: $color-dark;
     }
+
+    &.close-window {
+        transform: rotate(45deg);
+        font-size: 26px;
+        margin-right: 10px;
+    }
+
+    &.new-terminal {
+        position: absolute;
+        display: none;
+        top: 2px;
+        left: 5px;
+    }
 }
 
 .info {
     margin-left: auto;
     padding-right: 6px;
-}
-
-.close-window {
-    transform: rotate(45deg);
-    font-size: 26px;
 }
