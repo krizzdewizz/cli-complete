@@ -105,6 +105,12 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
             keybindings: [monaco.KeyCode.F1],
             run: () => editor.quickOpen()
         }),
+
+        ed.addAction({
+            ...EDITOR_ACTIONS.clearScreen,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_Q],
+            run: () => editor.terminalCmp.clear()
+        }),
     ];
 
     addUserBindings(ed);

@@ -42,6 +42,10 @@ export const EDITOR_ACTIONS = {
     commands: {
         id: 'clic.editor.commands',
         label: 'Command Palette',
+    },
+    clearScreen: {
+        id: 'clic.editor.clearScreen',
+        label: 'Clear Screen',
     }
 };
 

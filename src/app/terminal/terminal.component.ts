@@ -196,6 +196,10 @@ export class TerminalComponent implements OnInit, OnDestroy {
     this.term.focus();
   }
 
+  clear() {
+    this.term.clear();
+  }
+
   get hasSession(): boolean {
     return Boolean(this.session);
   }
