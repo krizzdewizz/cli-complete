@@ -2,14 +2,15 @@ import { EditorComponent } from './editor.component';
 import { addUserBindings } from './keybinding';
 
 const { remote } = window.require('electron');
-const { getUnsupportedActions, CLIC_ACTIONS } = remote.require('./keybindings-json');
+const { getUnsupportedMonacoActions } = remote.require('./keybindings-json');
+const { EDITOR_ACTIONS } = remote.require('./cli-complete-actions');
 
 function unbindDefaultAction(ed, actionId: string) {
     ed._standaloneKeybindingService.addDynamicKeybinding(`-${actionId}`);
 }
 
 function hideActions(ed: monaco.editor.IStandaloneCodeEditor) {
-    const unsupported = getUnsupportedActions();
+    const unsupported = getUnsupportedMonacoActions();
     Object
         .keys(unsupported)
         .forEach(actionId => unbindDefaultAction(ed, actionId));
@@ -27,7 +28,7 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
 
     const toDispose = [
         ed.addAction({
-            ...CLIC_ACTIONS.send,
+            ...EDITOR_ACTIONS.send,
             keybindings: [monaco.KeyCode.Enter],
             run: () => editor.send(),
             keybindingContext: 'editorTextFocus'
@@ -42,65 +43,65 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         // }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.selectSuggestionAndSend,
+            ...EDITOR_ACTIONS.selectSuggestionAndSend,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
             run: () => editor.selectSuggestion(),
             keybindingContext: 'suggestWidgetVisible'
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.selectSuggestion,
+            ...EDITOR_ACTIONS.selectSuggestion,
             keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.Enter],
             run: () => editor.selectSuggestion(false),
             keybindingContext: 'suggestWidgetVisible'
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.triggerDirectorySuggest,
+            ...EDITOR_ACTIONS.triggerDirectorySuggest,
             keybindings: [monaco.KeyCode.Tab],
             run: () => editor.selectSuggestionAndReopen(false),
             keybindingContext: 'editorTextFocus',
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.selectAndTriggerDirectorySuggest,
+            ...EDITOR_ACTIONS.selectAndTriggerDirectorySuggest,
             keybindings: [monaco.KeyCode.Tab, monaco.KeyCode.US_BACKSLASH],
             run: () => editor.selectSuggestionAndReopen(true),
             keybindingContext: 'editorTextFocus && suggestWidgetVisible && clicSuggest==1',
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.sendBreak,
+            ...EDITOR_ACTIONS.sendBreak,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C],
             run: () => editor.ctrlC()
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.focusTerminal,
+            ...EDITOR_ACTIONS.focusTerminal,
             keybindings: [monaco.KeyCode.F6],
             run: () => editor.terminalCmp.focus()
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.historyNext,
+            ...EDITOR_ACTIONS.historyNext,
             keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.RightArrow],
             run: () => editor.info.history.next()
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.historyPrev,
+            ...EDITOR_ACTIONS.historyPrev,
             keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow],
             run: () => editor.info.history.prev()
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.resetFontSize,
+            ...EDITOR_ACTIONS.resetFontSize,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.NUMPAD_0],
             run: () => editor.resetFontSize()
         }),
 
         ed.addAction({
-            ...CLIC_ACTIONS.commands,
+            ...EDITOR_ACTIONS.commands,
             keybindings: [monaco.KeyCode.F1],
             run: () => editor.quickOpen()
         }),
