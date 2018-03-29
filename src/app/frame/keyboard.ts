@@ -26,7 +26,6 @@ const actions: Actions = {
     'cmd+keyt': () => appEvent.newTerminal.next(),
     'cmd+keyw': () => appEvent.closeTerminal.next(),
     'cmd+backslash': () => appEvent.splitEditor.next(),
-    'cmd+slash': () => appEvent.splitEditor.next()
 };
 
 [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach(num => actions[`cmd+digit${num}`] = () => appEvent.selectTab.next(num));

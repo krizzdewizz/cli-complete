@@ -1,8 +1,10 @@
-const path = require('path');
-const fs = require('fs');
+import * as fs from 'fs';
+import * as path from 'path';
 const formatJson = require('format-json');
+const commentJson = require('comment-json');
 const { homedir } = require('./homedir');
 import { config } from './config';
+import { createKeybindingsJson } from './keybindings-json';
 
 export function settingsDir(): string {
     const home = config.dev ? path.resolve(__dirname, '..', '..') : homedir();
@@ -14,6 +16,7 @@ export function settingsFile(name: string): string {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
+    createKeybindingsJson(dir);
     return path.join(dir, name);
 }
 
@@ -33,7 +36,7 @@ export function loadSettings<T>(name: string, def: T): T {
     }
 
     try {
-        return JSON.parse(String(fs.readFileSync(file)));
+        return commentJson.parse(String(fs.readFileSync(file)));
     } catch (err) {
         console.error(`error while reading settings '${file}': ${err}`);
     }

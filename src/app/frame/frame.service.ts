@@ -32,12 +32,12 @@ function nextEditorId() {
   return `ed${Date.now()}`;
 }
 
-export function newEditor(): GoldenLayout.ComponentConfig {
+export function newEditor({ initialCwd }: { initialCwd?: string } = {}): GoldenLayout.ComponentConfig {
   return {
     type: 'component',
     componentName: EDITOR_COMPONENT,
     title: '...',
-    componentState: { editorId: nextEditorId() }
+    componentState: { editorId: nextEditorId(), initialCwd }
   };
 }
 
@@ -115,6 +115,12 @@ export class FrameService {
     Object.keys(cfg)
       .filter(key => key !== 'content')
       .forEach(key => delete cfg[key]);
+
+    accept(cfg, it => {
+      if (it.componentName === EDITOR_COMPONENT) {
+        delete it.componentState.initialCwd;
+      }
+    });
 
     const editors: { [id: string]: EditorSettings; } = {};
     forEachEditor(layout, ed => {

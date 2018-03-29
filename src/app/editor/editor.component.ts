@@ -83,6 +83,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     return (this.editor as any).contentWidgets['editor.widget.suggestWidget'].widget;
   }
 
+  private get quickOpenWidget() {
+    return (this.editor as any).overlayWidgets['editor.contrib.quickOpenEditorWidget'].widget;
+  }
+
   selectSuggestionAndReopen(selectSuggestion: boolean) {
     if (selectSuggestion) {
       const suggestVisible = this.suggestWidget.suggestWidgetVisible.get();
@@ -105,6 +109,15 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       this.editor.focus();
       this.send();
     }
+  }
+
+  quickOpen() {
+    this.editor.getAction('editor.action.quickCommand').run();
+    const qo = $('.quick-open-widget', this.quickOpenWidget.domNode);
+    const ed = $(this.editor.getDomNode());
+    const { top, left } = ed.offset();
+    const qoLeft = left + (ed.width() - qo.width()) / 2;
+    qo.offset({ top: top - 20, left: qoLeft });
   }
 
   activate(): Promise<void> {

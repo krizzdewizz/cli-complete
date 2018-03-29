@@ -22,6 +22,9 @@
       "@util/*": [
         "app/util/*"
       ],
+      "@lib/*": [
+        "app/lib/*"
+      ],
       "@style/*": [
         "app/style/*"
       ],

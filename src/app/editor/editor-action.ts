@@ -1,93 +1,112 @@
 import { EditorComponent } from './editor.component';
-import { appEvent } from '@services/app-event';
+import { addUserBindings } from './keybinding';
+
+const { remote } = window.require('electron');
+const { getUnsupportedActions, CLIC_ACTIONS } = remote.require('./keybindings-json');
+
+function unbindDefaultAction(ed, actionId: string) {
+    ed._standaloneKeybindingService.addDynamicKeybinding(`-${actionId}`);
+}
+
+function hideActions(ed: monaco.editor.IStandaloneCodeEditor) {
+    const unsupported = getUnsupportedActions();
+    Object
+        .keys(unsupported)
+        .forEach(actionId => unbindDefaultAction(ed, actionId));
+
+    const orig = ed.getSupportedActions.bind(ed);
+    ed.getSupportedActions = () => orig().filter(it => !unsupported[it.id]);
+}
 
 // tslint:disable:no-bitwise
 export function createEditorActions(editor: EditorComponent): monaco.IDisposable[] {
 
     const ed = editor.editor;
 
-    return [
+    hideActions(ed);
+
+    const toDispose = [
         ed.addAction({
-            id: 'send',
-            label: 'Send Line or Selection',
+            ...CLIC_ACTIONS.send,
             keybindings: [monaco.KeyCode.Enter],
             run: () => editor.send(),
             keybindingContext: 'editorTextFocus'
         }),
 
-        ed.addAction({
-            id: 'pipe-to-editor',
-            label: 'Pipe to Editor',
-            keybindings: [monaco.KeyCode.F9],
-            run: () => appEvent.pipeToQEditor.next(editor.elRef.nativeElement),
-            keybindingContext: 'editorTextFocus'
-        }),
+        // ed.addAction({
+        //     id: 'pipe-to-editor',
+        //     label: 'Pipe to Editor',
+        //     keybindings: [monaco.KeyCode.F9],
+        //     run: () => appEvent.pipeToQEditor.next(editor.elRef.nativeElement),
+        //     keybindingContext: 'editorTextFocus'
+        // }),
 
         ed.addAction({
-            id: 'select-suggestion-and-send',
-            label: 'Selection Suggestion and Send',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, undefined)],
+            ...CLIC_ACTIONS.selectSuggestionAndSend,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
             run: () => editor.selectSuggestion(),
             keybindingContext: 'suggestWidgetVisible'
         }),
 
         ed.addAction({
-            id: 'select-suggestion',
-            label: 'Selection Suggestion',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Shift | monaco.KeyCode.Enter, undefined)],
+            ...CLIC_ACTIONS.selectSuggestion,
+            keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.Enter],
             run: () => editor.selectSuggestion(false),
             keybindingContext: 'suggestWidgetVisible'
         }),
 
         ed.addAction({
-            id: 'trigger-directory-suggest',
-            label: 'Trigger Directory Suggest',
+            ...CLIC_ACTIONS.triggerDirectorySuggest,
             keybindings: [monaco.KeyCode.Tab],
             run: () => editor.selectSuggestionAndReopen(false),
             keybindingContext: 'editorTextFocus',
         }),
 
         ed.addAction({
-            id: 'select-and-trigger-directory-suggest',
-            label: 'Select and Trigger Directory Suggest',
+            ...CLIC_ACTIONS.selectAndTriggerDirectorySuggest,
             keybindings: [monaco.KeyCode.Tab, monaco.KeyCode.US_BACKSLASH],
             run: () => editor.selectSuggestionAndReopen(true),
             keybindingContext: 'editorTextFocus && suggestWidgetVisible && clicSuggest==1',
         }),
 
         ed.addAction({
-            id: 'send-break',
-            label: 'Send Break Signal',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C, undefined)],
+            ...CLIC_ACTIONS.sendBreak,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C],
             run: () => editor.ctrlC()
         }),
 
         ed.addAction({
-            id: 'focus-terminal',
-            label: 'Focus Terminal',
+            ...CLIC_ACTIONS.focusTerminal,
             keybindings: [monaco.KeyCode.F6],
             run: () => editor.terminalCmp.focus()
         }),
 
         ed.addAction({
-            id: 'history-next',
-            label: 'History Next',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.RightArrow, undefined)],
+            ...CLIC_ACTIONS.historyNext,
+            keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.RightArrow],
             run: () => editor.info.history.next()
         }),
 
         ed.addAction({
-            id: 'history-prev',
-            label: 'History Previous',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow, undefined)],
+            ...CLIC_ACTIONS.historyPrev,
+            keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.LeftArrow],
             run: () => editor.info.history.prev()
         }),
 
         ed.addAction({
-            id: 'reset-font-size',
-            label: 'Reset Font Size',
-            keybindings: [monaco.KeyMod.chord(monaco.KeyMod.CtrlCmd | monaco.KeyCode.NUMPAD_0, undefined)],
+            ...CLIC_ACTIONS.resetFontSize,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.NUMPAD_0],
             run: () => editor.resetFontSize()
         }),
+
+        ed.addAction({
+            ...CLIC_ACTIONS.commands,
+            keybindings: [monaco.KeyCode.F1],
+            run: () => editor.quickOpen()
+        }),
     ];
+
+    addUserBindings(ed);
+
+    return toDispose;
 }

@@ -3,5 +3,7 @@
 :host {
     flex: 1;
     margin-bottom: 30px;
+    padding-left: 15px; // same as editor line margin width
+    padding-top: 3px;
     display: flex;
 }

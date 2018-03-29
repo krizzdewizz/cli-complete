@@ -13,6 +13,13 @@ export function registerLanguage() {
     }
 
     monaco.languages.register({ id: CLIC_LANG_ID });
+
+    monaco.languages.setLanguageConfiguration(CLIC_LANG_ID, {
+        comments: {
+            lineComment: 'rem'
+        }
+    });
+
     monaco.languages.registerCompletionItemProvider(CLIC_LANG_ID, new HistoryCompletionItemProvider());
     monaco.languages.registerCompletionItemProvider(CLIC_LANG_ID, new DirCompletionItemProvider());
     monaco.editor.defineTheme('cli-complete-theme', {

@@ -132,6 +132,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       this.createComponent<EditorComponent>(container, EditorComponent, ed => {
         ed.setTabTitle = title => container.setTitle(title);
         ed.id = state.editorId;
+        ed.initialCwd = state.initialCwd;
       });
     });
   }
@@ -212,9 +213,10 @@ export class FrameComponent implements OnInit, OnDestroy {
       newParent = newRow.contentItems[newRow.contentItems.length - 1];
     }
 
-    const ed = newEditor();
-    this.lastFocusEditorId = ed.componentState.editorId;
-    newParent.addChild(ed, index);
+    const focusedEditor = getContentItemEditor(focusedItem);
+    const newEd = newEditor({ initialCwd: focusedEditor.prompt.procInfo.cwd });
+    this.lastFocusEditorId = newEd.componentState.editorId;
+    newParent.addChild(newEd, index);
   }
 
   private onNewTerminal() {
