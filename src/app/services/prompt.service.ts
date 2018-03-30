@@ -10,7 +10,6 @@ const { remote } = window.require('electron');
 const { processInfoMayChanged, getProcessInfo } = remote.require('./process-info');
 const { processTree } = remote.require('./process-tree');
 const { loadPlugins, formatPrompt: formatPromptPlugin } = remote.require('./plugins');
-const path = remote.require('path');
 
 export interface FormatPromptParams {
   sessionInfo: SessionInfo;

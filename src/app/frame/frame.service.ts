@@ -127,7 +127,8 @@ export class FrameService {
       editors[ed.id] = {
         content: ed.content,
         cwd: ed.prompt.params && ed.prompt.params.procInfo ? ed.prompt.params.procInfo.cwd : undefined,
-        history: ed.info.history.list
+        history: ed.info.history.list,
+        fontSize: ed.fontSize
       };
     });
 
@@ -156,6 +157,7 @@ export class FrameService {
       if (edSettings) {
         ed.initialContent = edSettings.content;
         ed.initialCwd = edSettings.cwd;
+        ed.initialFontSize = edSettings.fontSize;
         const history = edSettings.history || [];
         ed.initialHistory = history;
         if (ed.info) {

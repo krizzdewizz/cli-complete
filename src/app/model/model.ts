@@ -26,6 +26,7 @@ export interface EditorSettings {
     content: string;
     cwd?: string;
     history?: string[];
+    fontSize?: number;
 }
 
 export interface Settings {

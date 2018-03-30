@@ -97,7 +97,7 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         ed.addAction({
             ...EDITOR_ACTIONS.resetFontSize,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.NUMPAD_0],
-            run: () => editor.resetFontSize()
+            run: () => editor.setFontSize()
         }),
 
         ed.addAction({

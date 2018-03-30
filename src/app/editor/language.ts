@@ -27,6 +27,7 @@ export function registerLanguage() {
         inherit: true,
         rules: [],
         colors: {
+            'editorCursor.foreground': '#b300b3',
             'editor.selectionBackground': colorAccentDark,
             'editorSuggestWidget.selectedBackground': colorAccentDark2,
             'editorSuggestWidget.highlightForeground': '#cc00cc'

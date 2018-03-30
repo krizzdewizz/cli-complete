@@ -1,6 +1,6 @@
 import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef, HostListener } from '@angular/core';
 import { TerminalComponent } from '../terminal/terminal.component';
-import { Style, EDITOR_LINE_HEIGHT } from '@style/style';
+import { Style, getEditorLineHeight } from '@style/style';
 import { PromptService, Prompt } from '@services/prompt.service';
 import { ISubscription } from 'rxjs/Subscription';
 import { SessionInfo } from '@model/model';
@@ -36,6 +36,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   initialContent = '';
   initialCwd: string;
   initialHistory: string[] = [];
+  initialFontSize = Style.fontSize;
 
   setTabTitle: (title: string) => void = () => undefined;
 
@@ -44,27 +45,29 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('wheel', ['$event']) onWheel(e) {
     if (this.fontSizeWheelService.onWheel(this.style, e)) {
-      this.resetFontSize(this.style.fontSize);
+      this.setFontSize(this.style.fontSize);
     }
   }
 
-  editorOptions: monaco.editor.IEditorConstructionOptions = {
-    ...this.style,
-    theme: 'cli-complete-theme',
-    lineNumbers: 'off',
-    lineDecorationsWidth: 15,
-    minimap: { enabled: false },
-    acceptSuggestionOnEnter: 'off',
-    lineHeight: EDITOR_LINE_HEIGHT,
-    renderLineHighlight: 'none',
-    occurrencesHighlight: false,
-    scrollbar: {
-      vertical: 'hidden'
-    },
-    overviewRulerLanes: 0,
-    // suggestOnTriggerCharacters: true,
-    // acceptSuggestionOnCommitCharacter: true,
-    // language: CLIC_LANG_ID,
+  private getEditorOptions(): monaco.editor.IEditorConstructionOptions {
+    return {
+      ...{ ...this.style, fontSize: this.initialFontSize },
+      theme: 'cli-complete-theme',
+      lineNumbers: 'off',
+      lineDecorationsWidth: 15,
+      minimap: { enabled: false },
+      acceptSuggestionOnEnter: 'off',
+      lineHeight: getEditorLineHeight(this.initialFontSize),
+      renderLineHighlight: 'none',
+      occurrencesHighlight: false,
+      scrollbar: {
+        vertical: 'hidden'
+      },
+      overviewRulerLanes: 0,
+      // suggestOnTriggerCharacters: true,
+      // acceptSuggestionOnCommitCharacter: true,
+      // language: CLIC_LANG_ID,
+    };
   };
 
   constructor(
@@ -74,9 +77,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     private fontSizeWheelService: FontSizeWheelService) {
   }
 
-  resetFontSize(fontSize = Style.fontSize) {
-    this.editor.updateOptions({ fontSize: fontSize });
+  setFontSize(fontSize = Style.fontSize, fromEvent = true) {
+    this.editor.updateOptions({ fontSize: fontSize, lineHeight: getEditorLineHeight(fontSize) });
     this.terminalCmp.setFontSize(fontSize);
+    if (fromEvent) {
+      appEvent.saveLayout.emit();
+      this.updateEditorHeight();
+    }
   }
 
   private get suggestWidget() {
@@ -130,7 +137,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     return new Promise(resolve => {
       setTimeout(() => {
 
-        const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.editorOptions);
+        const ed = this.editor = monaco.editor.create(this.editorElement.nativeElement, this.getEditorOptions());
         const model = monaco.editor.createModel('', CLIC_LANG_ID, monaco.Uri.parse(`clic://${this.id}`));
         ed.setModel(model);
 
@@ -343,8 +350,12 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.prevLineCount = lineCount;
-    const height = lineCount * EDITOR_LINE_HEIGHT;
+    const height = lineCount * getEditorLineHeight(this.fontSize);
     ed.getDomNode().style.height = `${height}px`;
     ed.layout();
+  }
+
+  get fontSize(): number {
+    return this.editor ? this.editor.getConfiguration().fontInfo.fontSize : this.initialFontSize;
   }
 }
