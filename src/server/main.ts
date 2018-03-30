@@ -26,7 +26,6 @@ function createWindow() {
     ...settings.window,
     icon: config.icon,
     frame: false,
-    transparent: true,
     backgroundColor: '#000'
   });
 
