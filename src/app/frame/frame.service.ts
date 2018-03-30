@@ -126,7 +126,7 @@ export class FrameService {
     forEachEditor(layout, ed => {
       editors[ed.id] = {
         content: ed.content,
-        cwd: ed.prompt.procInfo ? ed.prompt.procInfo.cwd : undefined,
+        cwd: ed.prompt.params && ed.prompt.params.procInfo ? ed.prompt.params.procInfo.cwd : undefined,
         history: ed.info.history.list
       };
     });

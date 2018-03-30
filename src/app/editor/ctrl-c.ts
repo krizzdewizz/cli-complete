@@ -2,8 +2,12 @@ const DELAY = 300;
 
 let firstTimer;
 
-// press twice within timeout to break, else copyToClipboard
-export function handleCtrlC(breakk: () => void, copyToClipboard: () => void) {
+// empty selection -> breakk(). press twice within timeout to breakk(), else copyToClipboard()
+export function handleCtrlC(selection: monaco.Range, breakk: () => void, copyToClipboard: () => void) {
+    if (selection.isEmpty()) {
+        breakk();
+        return;
+    }
     if (firstTimer) {
         clearTimeout(firstTimer);
         firstTimer = undefined;

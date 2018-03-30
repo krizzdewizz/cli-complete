@@ -1,4 +1,5 @@
 import { EventEmitter } from '@angular/core';
+import { EditorComponent } from '../editor/editor.component';
 
 export const appEvent = {
     newTerminal: new EventEmitter<GoldenLayout.ContentItem>(), // optional stack
@@ -9,6 +10,6 @@ export const appEvent = {
     saveLayout: new EventEmitter<HTMLElement>(),
     saveLayoutAuto: new EventEmitter<HTMLElement>(),
     sessionData: new EventEmitter<number>(), // pid
-    focusEditor: new EventEmitter<string>(), // id
+    focusEditor: new EventEmitter<EditorComponent>(),
     splitEditor: new EventEmitter<void>(),
 };

@@ -1,13 +1,28 @@
 import { Injectable, EventEmitter, NgZone } from '@angular/core';
-import { ProcessInfo } from '@server/process-info';
 import { Observable } from 'rxjs/Observable';
 import { SessionInfo } from '@model/model';
 import { accept } from '@util/util';
+import { ProcessInfo } from '@server/process-info';
+import { appEvent } from '@services/app-event';
+import { EditorComponent } from '../editor/editor.component';
 
 const { remote } = window.require('electron');
 const { processInfoMayChanged, getProcessInfo } = remote.require('./process-info');
 const { processTree } = remote.require('./process-tree');
+const { loadPlugins, formatPrompt: formatPromptPlugin } = remote.require('./plugins');
 const path = remote.require('path');
+
+export interface FormatPromptParams {
+  sessionInfo: SessionInfo;
+  procInfo: ProcessInfo;
+  procIsSelf: boolean;
+  focus: boolean;
+}
+
+export interface Prompt {
+  prompt: string;
+  params?: FormatPromptParams;
+}
 
 async function findPid(rootPid: number) {
   const tree = await processTree(rootPid);
@@ -18,21 +33,12 @@ async function findPid(rootPid: number) {
   return lastChild ? lastChild.pid : undefined;
 }
 
-function formatTitle(title: string) {
-  return path.basename(title, path.extname(title));
-}
-
-export interface Prompt {
-  prompt: string;
-  sessionInfo?: SessionInfo;
-  procInfo?: ProcessInfo;
-}
-
 @Injectable()
 export class PromptService {
   info = new EventEmitter<string>();
 
   private infoTimer;
+  private focusedEditor: EditorComponent;
 
   showInfoForAWhile(msg: string) {
     clearTimeout(this.infoTimer);
@@ -67,6 +73,8 @@ export class PromptService {
   }
 
   constructor(private zone: NgZone) {
+    loadPlugins();
+    appEvent.focusEditor.subscribe(focusedEditor => this.focusedEditor = focusedEditor);
   }
 
   async promptMayChanged(sessionInfo: SessionInfo) {
@@ -77,7 +85,12 @@ export class PromptService {
     const change = async (thePid: number) => {
       processInfoMayChanged(thePid);
       const procInfo = await getProcessInfo(thePid);
-      this.emitPrompt(sessionInfo, procInfo, thePid === sessionInfo.pid);
+      this.emitPrompt({
+        sessionInfo,
+        procInfo,
+        procIsSelf: thePid === sessionInfo.pid,
+        focus: this.focusedEditor && this.focusedEditor.sessionInfo.pid === sessionInfo.pid
+      });
     };
 
     const pid = await findPid(sessionInfo.pid);
@@ -92,21 +105,26 @@ export class PromptService {
     }
   }
 
-  private formatPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo, procIsSelf: boolean): string {
-    // return `${procInfo.cwd} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
+  private formatPromptDefault({ procInfo, procIsSelf }): string {
     return [
       procInfo.cwd,
-      procIsSelf ? undefined : formatTitle(procInfo.title)
+      procIsSelf ? undefined : procInfo.title
     ]
       .filter(Boolean)
       .join(' - ');
   }
 
-  private emitPrompt(sessionInfo: SessionInfo, procInfo: ProcessInfo, procIsSelf: boolean) {
-    const p = this.prompts[sessionInfo.pid];
+  private async formatPrompt(params: FormatPromptParams): Promise<string> {
+    // return `${procInfo.cwd} - ${formatTitle(procInfo.title)} - ${procInfo.commandLine}`;
+    const prompt = await formatPromptPlugin(params);
+    return prompt || this.formatPromptDefault(params);
+  }
+
+  private async emitPrompt(params: FormatPromptParams) {
+    const p = this.prompts[params.sessionInfo.pid];
     if (p) {
-      const prompt = this.formatPrompt(sessionInfo, procInfo, procIsSelf);
-      this.zone.run(() => p.next({ prompt, sessionInfo, procInfo }));
+      const prompt = await this.formatPrompt(params);
+      this.zone.run(() => p.next({ prompt, params }));
     }
   }
 }

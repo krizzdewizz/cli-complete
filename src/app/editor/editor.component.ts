@@ -136,7 +136,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
         this.suggestCompletionContext = ed.createContextKey('clicSuggest', Suggest.HISTORY);
 
-        ed.onDidFocusEditorText(() => appEvent.focusEditor.next(this.id));
+        ed.onDidFocusEditorText(() => appEvent.focusEditor.next(this));
 
         ed.onMouseDown(e => {
           const { range, element } = e.target;
@@ -211,7 +211,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
   ctrlC() {
     handleCtrlC(
-      () => this.terminalCmp.send(String.fromCharCode(3), { newLine: false, clear: false }),
+      this.editor.getSelection(),
+      () => this.terminalCmp.sendCtrlC(),
       () => this.editor.getAction('editor.action.clipboardCopyAction').run()
     );
   }

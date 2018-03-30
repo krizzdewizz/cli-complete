@@ -3,6 +3,7 @@ import * as url from 'url';
 import { config } from './config';
 import { createMenu } from './menu';
 import { loadSettings, saveSettings } from './settings';
+import { isDev } from './dev';
 
 let win: BrowserWindow;
 
@@ -31,7 +32,7 @@ function createWindow() {
 
   win.loadURL(url.format(config.url));
 
-  const dev = config.dev || process.argv.indexOf('-dev') >= 0;
+  const dev = isDev();
 
   win.setMenu(Menu.buildFromTemplate(createMenu(dev)));
 

@@ -23,7 +23,7 @@ export function settingsFile(name: string): string {
 export function saveSettings<T>(name: string, settings: T) {
     const home = settingsFile(name);
     try {
-        fs.writeFileSync(home, formatJson.diffy(settings));
+        fs.writeFileSync(home, formatJson.plain(settings));
     } catch (err) {
         console.error(`error while writing settings '${home}': ${err}`);
     }

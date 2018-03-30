@@ -1,0 +1,9 @@
+{
+  "name": "prompt-format",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Christian Oetterli",
+  "license": "ISC",
+  "dependencies": {}
+}

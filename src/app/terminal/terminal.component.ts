@@ -81,7 +81,8 @@ export class TerminalComponent implements OnInit, OnDestroy {
       ...this.style,
       theme: {
         background: '#1e1e1e',
-        foreground: '#dddddd'
+        foreground: '#dddddd',
+        cursor: '#800080'
       }
     });
 
@@ -177,6 +178,10 @@ export class TerminalComponent implements OnInit, OnDestroy {
     autoAnswerYes(data, yesKey => this.send(yesKey, { clear: false }));
   }
 
+  sendCtrlC() {
+    this.send(String.fromCharCode(3), { newLine: false, clear: false });
+  }
+
   send(data: string, { newLine = true, clear = true, writeDataToTerm = true } = {}) {
     if (!this.session) {
       return;
@@ -194,6 +199,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
 
   focus() {
     this.term.focus();
+    this.term.scrollToBottom();
   }
 
   clear() {

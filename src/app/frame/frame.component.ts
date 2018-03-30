@@ -6,6 +6,7 @@ import { findAncestor, accept } from '@util/util';
 import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT, setFocusedTabElement, forEachEditor, getTabElement, EDITOR_COMPONENT } from './frame.service';
 import { registerKeyboardActions } from './keyboard';
 import { ModKeyService } from './mod-key.service';
+import { PromptService } from '@services/prompt.service';
 
 @Component({
   selector: 'clic-frame',
@@ -28,7 +29,8 @@ export class FrameComponent implements OnInit, OnDestroy {
     private componentFactoryResolver: ComponentFactoryResolver,
     private frameService: FrameService,
     private modKeyService: ModKeyService,
-    private zone: NgZone
+    private zone: NgZone,
+    private promptService: PromptService
   ) {
   }
 
@@ -170,7 +172,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       appEvent.saveLayout.subscribe(() => this.frameService.saveSettings(this.layout)),
       appEvent.saveLayoutAuto.subscribe(() => this.frameService.saveSettingsThrottle(this.layout)),
       appEvent.sessionData.subscribe(pid => this.onSessionData(pid)),
-      appEvent.focusEditor.subscribe(id => this.onFocusEditor(id)),
+      appEvent.focusEditor.subscribe(editor => this.onFocusEditor(editor.id)),
       appEvent.splitEditor.subscribe(id => this.onSplitEditor()),
       this.modKeyService.controlDownLong.subscribe(down => this.onControlDownLong(down))
     ];
@@ -222,7 +224,7 @@ export class FrameComponent implements OnInit, OnDestroy {
     }
 
     const focusedEditor = getContentItemEditor(focusedItem);
-    const newEd = newEditor({ initialCwd: focusedEditor.prompt.procInfo.cwd });
+    const newEd = newEditor({ initialCwd: focusedEditor.prompt.params.procInfo.cwd });
     this.lastFocusEditorId = newEd.componentState.editorId;
     newParent.addChild(newEd, index);
   }
@@ -279,6 +281,7 @@ export class FrameComponent implements OnInit, OnDestroy {
       if (ed.id === id) {
         setFocusedTabElement(it, false);
       }
+      this.promptService.promptMayChanged(ed.sessionInfo);
     });
   }
 
