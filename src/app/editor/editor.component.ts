@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef, HostListener } from '@angular/core';
+import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef, HostListener, NgZone } from '@angular/core';
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style, getEditorLineHeight } from '@style/style';
 import { PromptService, Prompt } from '@services/prompt.service';
@@ -74,7 +74,13 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     public elRef: ElementRef,
     private promptService: PromptService,
     private frameService: FrameService,
-    private fontSizeWheelService: FontSizeWheelService) {
+    private fontSizeWheelService: FontSizeWheelService,
+    private zone: NgZone) {
+  }
+
+  increaseFontSize(increase: boolean) {
+    const newFontSize = this.fontSize + (increase ? 1 : -1);
+    this.setFontSize(newFontSize);
   }
 
   setFontSize(fontSize = Style.fontSize, fromEvent = true) {
@@ -83,6 +89,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     if (fromEvent) {
       appEvent.saveLayout.emit();
       this.updateEditorHeight();
+
+      const diff = fontSize - Style.fontSize;
+      const diffString = diff === 0 ? '' : ` (${diff > 0 ? '+' : ''}${diff})`;
+      this.zone.run(() => this.promptService.showInfoForAWhile(`${fontSize}px${diffString}`));
     }
   }
 

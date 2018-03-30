@@ -35,6 +35,14 @@ export const EDITOR_ACTIONS = {
         id: 'clic.editor.history-prev',
         label: 'History Previous',
     },
+    increaseFontSize: {
+        id: 'clic.editor.increase-font-size',
+        label: 'Increase Font Size',
+    },
+    decreaseFontSize: {
+        id: 'clic.editor.decrease-font-size',
+        label: 'Decrease Font Size',
+    },
     resetFontSize: {
         id: 'clic.editor.reset-font-size',
         label: 'Reset Font Size',

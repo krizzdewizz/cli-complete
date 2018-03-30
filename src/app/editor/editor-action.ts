@@ -95,6 +95,18 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         }),
 
         ed.addAction({
+            ...EDITOR_ACTIONS.increaseFontSize,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.US_EQUAL],
+            run: () => editor.increaseFontSize(true)
+        }),
+
+        ed.addAction({
+            ...EDITOR_ACTIONS.decreaseFontSize,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.US_MINUS],
+            run: () => editor.increaseFontSize(false)
+        }),
+
+        ed.addAction({
             ...EDITOR_ACTIONS.resetFontSize,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.NUMPAD_0],
             run: () => editor.setFontSize()

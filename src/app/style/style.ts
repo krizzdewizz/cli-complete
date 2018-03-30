@@ -12,7 +12,7 @@ export const DEFAULT_FONT_SIZE = 14;
 export const EDITOR_LINE_HEIGHT = getEditorLineHeight(DEFAULT_FONT_SIZE);
 
 export const Style: Style = {
-    fontFamily: 'Consolas',
-    // fontFamily: 'Fira Code',
+    // fontFamily: 'Consolas',
+    fontFamily: 'Fira Code',
     fontSize: DEFAULT_FONT_SIZE
 };
