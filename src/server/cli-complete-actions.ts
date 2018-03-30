@@ -39,13 +39,17 @@ export const EDITOR_ACTIONS = {
         id: 'clic.editor.reset-font-size',
         label: 'Reset Font Size',
     },
-    commands: {
-        id: 'clic.editor.commands',
+    quickCommand: {
+        id: 'clic.editor.action.quickCommand',
         label: 'Command Palette',
     },
     clearScreen: {
         id: 'clic.editor.clearScreen',
         label: 'Clear Screen',
+    },
+    clipboardCopyAction: {
+        id: 'clic.editor.clipboardCopyAction',
+        label: 'Copy',
     }
 };
 

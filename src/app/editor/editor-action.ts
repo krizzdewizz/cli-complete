@@ -101,7 +101,7 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
         }),
 
         ed.addAction({
-            ...EDITOR_ACTIONS.commands,
+            ...EDITOR_ACTIONS.quickCommand,
             keybindings: [monaco.KeyCode.F1],
             run: () => editor.quickOpen()
         }),
@@ -110,6 +110,12 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
             ...EDITOR_ACTIONS.clearScreen,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_Q],
             run: () => editor.terminalCmp.clear()
+        }),
+
+        ed.addAction({
+            ...EDITOR_ACTIONS.clipboardCopyAction,
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KEY_C],
+            run: () => ed.getAction('editor.action.clipboardCopyAction').run()
         }),
     ];
 

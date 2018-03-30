@@ -17,7 +17,8 @@ export const MONACO_ACTIONS: { id: string, label: string, unsupported?: boolean 
     },
     {
         id: 'editor.action.clipboardCopyAction',
-        label: 'Copy'
+        label: 'Copy',
+        unsupported: true
     },
     {
         id: 'editor.action.clipboardPasteAction',
