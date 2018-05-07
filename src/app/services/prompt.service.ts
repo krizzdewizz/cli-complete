@@ -1,5 +1,5 @@
 import { Injectable, EventEmitter, NgZone } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { SessionInfo } from '@model/model';
 import { accept } from '@util/util';
 import { ProcessInfo } from '@server/process-info';

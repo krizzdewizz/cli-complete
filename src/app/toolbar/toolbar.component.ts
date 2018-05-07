@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { appEvent } from '@services/app-event';
-import { ISubscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { PromptService } from '@services/prompt.service';
 
 const { remote } = window.require('electron');
@@ -16,7 +16,7 @@ export class ToolbarComponent implements OnInit, OnDestroy {
   @Input() title: boolean;
 
   info: string;
-  private subscriptions: ISubscription[] = [];
+  private subscriptions: Subscription[] = [];
 
   constructor(private promptService: PromptService) {
   }

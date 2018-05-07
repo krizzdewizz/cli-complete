@@ -10,7 +10,7 @@ import { autoAnswerYes } from './auto-answer-yes';
 import { FontSizeWheelService } from '@services/font-size-wheel.service';
 import { mapInternalCommand } from './internal-command';
 import { appEvent } from '@services/app-event';
-import { ISubscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { loadAlias } from './alias';
 
 const { clipboard, remote } = window.require('electron');
@@ -33,7 +33,7 @@ export class TerminalComponent implements OnInit, OnDestroy {
   _sessionInfo: SessionInfo;
   private term: Terminal;
   private session: TerminalSession;
-  private subscriptions: ISubscription[];
+  private subscriptions: Subscription[];
 
   private style = { ...Style };
 

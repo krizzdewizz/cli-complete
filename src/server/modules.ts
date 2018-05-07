@@ -1,1 +1,1 @@
-export { Subject } from 'rxjs/Subject';
+export { Subject } from 'rxjs';

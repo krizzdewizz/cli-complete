@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { EditorComponent } from './editor/editor.component';
 import { FrameComponent } from './frame/frame.component';
-import './rxjs';
+// import './rxjs';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 import { TerminalComponent } from './terminal/terminal.component';
 import { TerminalService, RemoteService } from '@services/terminal.service';

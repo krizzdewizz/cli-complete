@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { PromptService } from '@services/prompt.service';
-import { ISubscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'clic-prompt',
@@ -12,7 +12,7 @@ export class PromptComponent implements OnInit, OnDestroy {
   info: string;
   @Input() prompt: string;
 
-  private subscriptions: ISubscription[] = [];
+  private subscriptions: Subscription[] = [];
 
   constructor(private promptService: PromptService) {
   }

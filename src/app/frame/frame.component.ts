@@ -1,6 +1,6 @@
 import { Component, OnInit, ElementRef, ViewChild, ViewContainerRef, ComponentFactoryResolver, OnDestroy, Type, HostBinding, NgZone } from '@angular/core';
 import { EditorComponent } from '../editor/editor.component';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { appEvent } from '@services/app-event';
 import { findAncestor, accept } from '@util/util';
 import { FrameService, newEditor, getContentItemEditor, DEFAULT_LAYOUT, setFocusedTabElement, forEachEditor, getTabElement, EDITOR_COMPONENT } from './frame.service';

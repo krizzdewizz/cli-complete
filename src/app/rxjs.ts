@@ -1,4 +1,4 @@
-import 'rxjs/Rx';
+// import 'rxjs/Rx';
 // import 'rxjs/add/observable/never';
 // import 'rxjs/add/observable/of';
 // import 'rxjs/add/operator/delay';

@@ -34,14 +34,6 @@ export function createEditorActions(editor: EditorComponent): monaco.IDisposable
             keybindingContext: 'editorTextFocus'
         }),
 
-        // ed.addAction({
-        //     id: 'pipe-to-editor',
-        //     label: 'Pipe to Editor',
-        //     keybindings: [monaco.KeyCode.F9],
-        //     run: () => appEvent.pipeToQEditor.next(editor.elRef.nativeElement),
-        //     keybindingContext: 'editorTextFocus'
-        // }),
-
         ed.addAction({
             ...EDITOR_ACTIONS.selectSuggestionAndSend,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],

@@ -3,6 +3,7 @@ import { accept } from '@util/util';
 import { Settings, EditorSettings } from '@model/model';
 import { EditorComponent } from '../editor/editor.component';
 import { Subject } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
 import { EditorHistory } from '../editor/history';
 
 const { remote } = window.require('electron');
@@ -84,7 +85,9 @@ export class FrameService {
 
   constructor() {
     this.flash$
-      .throttleTime(2000)
+      .pipe(
+        throttleTime(2000)
+      )
       .subscribe(({ pid, layout }) => {
         forEachEditor(layout, (ed, contentItem) => {
           if (ed.sessionInfo && ed.sessionInfo.pid === pid && ed.terminalCmp.writeDataToTerm) {

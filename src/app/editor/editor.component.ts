@@ -2,7 +2,8 @@ import { Component, ViewChild, OnDestroy, AfterViewInit, ElementRef, HostListene
 import { TerminalComponent } from '../terminal/terminal.component';
 import { Style, getEditorLineHeight } from '@style/style';
 import { PromptService, Prompt } from '@services/prompt.service';
-import { ISubscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { SessionInfo } from '@model/model';
 import { handleCtrlC } from './ctrl-c';
 import { createEditorActions } from './editor-action';
@@ -21,12 +22,12 @@ import { EditorHistory } from './history';
 export class EditorComponent implements AfterViewInit, OnDestroy {
 
   private toDispose: monaco.IDisposable[] = [];
-  private subscriptions: ISubscription[] = [];
+  private subscriptions: Subscription[] = [];
   private style = { ...Style };
   private ignoreChangeEvent: boolean;
   private suggestCompletionContext: monaco.editor.IContextKey<Suggest>;
   private prevLineCount: number;
-  private historySelectSubscription: ISubscription;
+  private historySelectSubscription: Subscription;
 
   active: boolean;
   id: string;
@@ -157,7 +158,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
         ed.onMouseDown(e => {
           const { range, element } = e.target;
-          if (element.classList.contains('clic-line-run')) {
+          if (element.classList.contains('clic-line-send')) {
             const line = range.startLineNumber;
             ed.setSelection(new monaco.Range(line, 0, line, ed.getModel().getLineMaxColumn(line)));
             ed.focus();
@@ -167,7 +168,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
         ed.onDidChangeModelContent(e => {
           ed.deltaDecorations([], [
-            { range: ed.getModel().getFullModelRange(), options: { isWholeLine: true, linesDecorationsClassName: 'clic-line-run' } },
+            { range: ed.getModel().getFullModelRange(), options: { isWholeLine: true, linesDecorationsClassName: 'clic-line-send' } },
           ]);
 
           if (this.ignoreChangeEvent) {
@@ -216,7 +217,9 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     this.subscriptions.push(
       appEvent.layout
-        .filter(() => Boolean(this.editor))
+        .pipe(
+          filter(() => Boolean(this.editor))
+        )
         .subscribe(() => this.editor.layout()),
     );
   }
